@@ -36,6 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILD_MODE: ${{ needs.detect-mode.outputs.build_mode }}
+      USE_REGISTRY_CONTEXTS: false
 
     steps:
       - uses: actions/checkout@v5
@@ -56,18 +57,9 @@ jobs:
           key: docker-cache-${{ github.run_id }}
           restore-keys: docker-cache-
 
-      - name: Build and push base
-        uses: ./.github/actions/docker-bake
+      - uses: ./.github/actions/docker-bake
         env:
           CLOVER2_DEV_GIT_HASH: ${{ steps.vars.outputs.git_hash }}
         with:
-          target: base
-          push: true
-
-      - name: Build and push core-devel
-        uses: ./.github/actions/docker-bake
-        env:
-          CLOVER2_DEV_GIT_HASH: ${{ steps.vars.outputs.git_hash }}
-        with:
-          target: core-devel
+          target: default
           push: true
