@@ -69,3 +69,17 @@
   tags:
     - gz
     - simulation
+
+- name: Install Gazebo ROS2 Bridge
+  become: true
+  ansible.buildin.apt:
+    name:
+      - ros-{{ ros_distro }}-ros-gz-sim
+      - ros-{{ ros_distro }}-ros-gz-bridge
+    state: latest
+    update_cache: true
+  tags:
+    - never
+    - gz
+    - simulation
+    - ros

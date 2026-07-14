@@ -3,7 +3,6 @@ ARG BASE_IMAGE=clover2-base
 FROM ${BASE_IMAGE} AS core-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
-COPY docker/scripts /scripts/
 
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}

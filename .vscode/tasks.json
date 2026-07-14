@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "source /opt/ros/$ROS_DISTRO/setup.bash && colcon build --symlink-install",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run Simulation",
+            "type": "shell",
+            "command": [
+                "source /opt/ros/$ROS_DISTRO/setup.bash &&",
+                "source ${workspaceFolder}/install/setup.bash &&",
+                "ros2 launch clover2_sim gz_simple.launch.py"
+            ],
+            "dependsOn": [
+                "Build"
+            ],
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            }
+        }
+    ]
+}

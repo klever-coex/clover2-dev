@@ -2,8 +2,8 @@
 /install
 /log
 
-/.vscode
-/.zed
+.vscode/settings.json
+.zed
 
 .cache
 
