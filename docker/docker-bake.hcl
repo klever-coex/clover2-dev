@@ -6,6 +6,10 @@ variable "ROS_DISTRO" { default = "jazzy" }
 
 variable "CLOVER2_DEV_GIT_HASH" { }
 
+variable "USE_REGISTRY_CONTEXTS" {
+  default = true
+}
+
 variable "LABELS" {
   default = {
     "org.opencontainers.image.authors"  = "Lapin Matvey"
@@ -38,7 +42,7 @@ function "tagged" {
 
 function "ctx" {
     params = [name]
-    result = "docker-image://${tagged(name)[0]}"
+    result = USE_REGISTRY_CONTEXTS ? "docker-image://${tagged(name)[0]}" : "target:${name}"
 }
 
 target "_base" {
@@ -85,29 +89,3 @@ target "core-devel" {
         ROS_DISTRO = ROS_DISTRO
     }
 }
-
-# target "core-devel" {
-#     dockerfile = "docker/core.Dockerfile"
-#     target     = "core-devel"
-#     tags       = tags("core-devel")
-#     contexts = {
-#         autoware-base = ctx("base")
-#     }
-#     args = {
-#         BASE_IMAGE = "autoware-base"
-#         ROS_DISTRO = ROS_DISTRO
-#     }
-# }
-
-# target "core" {
-#     dockerfile = "docker/core.Dockerfile"
-#     target     = "core"
-#     tags       = tags("core")
-#     contexts = {
-#         autoware-base = ctx("base")
-#     }
-#     args = {
-#       BASE_IMAGE = "autoware-base"
-#         ROS_DISTRO = ROS_DISTRO
-#     }
-# }
