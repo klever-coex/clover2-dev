@@ -1,0 +1,65 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  detect-mode:
+    runs-on: ubuntu-latest
+    outputs:
+      build_mode: ${{ steps.detect.outputs.build_mode }}
+    steps:
+      - name: Detect build mode
+        id: detect
+        shell: bash
+        run: |
+          case "${{ github.ref }}" in
+            refs/heads/master)
+              echo "build_mode=master" >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo "build_mode=develop" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+  docker:
+    needs: detect-mode
+    runs-on: ubuntu-latest
+    env:
+      BUILD_MODE: ${{ needs.detect-mode.outputs.build_mode }}
+      USE_REGISTRY_CONTEXTS: false
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compute version
+        id: vars
+        shell: bash
+        run: |
+          HASH=$(git rev-parse --short HEAD)
+          echo "git_hash=$HASH" >> "$GITHUB_OUTPUT"
+
+      - uses: ./.github/actions/docker-setup
+
+      - name: Restore Docker cache
+        uses: actions/cache@v5
+        with:
+          path: .cache
+          key: docker-cache-${{ github.run_id }}
+          restore-keys: docker-cache-
+
+      - uses: ./.github/actions/docker-bake
+        env:
+          CLOVER2_DEV_GIT_HASH: ${{ steps.vars.outputs.git_hash }}
+        with:
+          target: default
+          push: true

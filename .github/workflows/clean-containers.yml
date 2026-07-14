@@ -1,0 +1,24 @@
+name: Cleanup Container Registry
+
+on:
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+permissions:
+  packages: write
+
+jobs:
+  clean-ghcr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: snok/container-retention-policy@v3.1.0
+        with:
+          account: klever-coex
+          token: ${{ secrets.GH_PAT }}
+          image-names: "clover2-dev/*"
+          cut-off: 3d
+          keep-at-least: 3
+          image-tags: "!latest"
+          dry-run: false
+          tag-selection: both

@@ -4,21 +4,14 @@ variable "REGISTRY_POLICY" { }
 variable "REGISTRY" { default = "ghcr.io/klever-coex/clover2-dev/" }
 variable "ROS_DISTRO" { default = "jazzy" }
 
-variable "CLOVER2_SIM_VERSION" { }
-variable "CLOVER2_SIM_BASE_VERSION" { }
-variable "CLOVER2_SIM_GIT_HASH" { }
-
-variable "USE_REGISTRY_CONTEXTS" {
-  default = true
-}
+variable "CLOVER2_DEV_GIT_HASH" { }
 
 variable "LABELS" {
   default = {
     "org.opencontainers.image.authors"  = "Lapin Matvey"
     "org.opencontainers.image.licenses" = "MIT"
     "org.opencontainers.image.source"   = "https://github.com/klever-coex/clover2-dev"
-    "org.opencontainers.image.version"  = CLOVER2_SIM_VERSION
-    "org.opencontainers.image.revision" = CLOVER2_SIM_GIT_HASH
+    "org.opencontainers.image.revision" = CLOVER2_DEV_GIT_HASH
   }
 }
 
@@ -33,23 +26,19 @@ variable "PLATFORMS" {
 function "tagged" {
     params = [name]
     result = compact(concat(
-        ["${REGISTRY}${name}:${CLOVER2_SIM_GIT_HASH}"],
+        ["${REGISTRY}${name}:${CLOVER2_DEV_GIT_HASH}"],
 
         # For master build have dirty version and latest tag
         BUILD_MODE == "master" ? ["${REGISTRY}${name}:latest"] : [],
 
         # For develop build have dirty version tag
         # Only version tag
-
-        # Releases have version and stable tags
-        BUILD_MODE == "release" ? ["${REGISTRY}${name}:stable"] : [],
-        BUILD_MODE == "release" ? ["${REGISTRY}${name}:${CLOVER2_SIM_VERSION}"] : [],
     ))
 }
 
 function "ctx" {
     params = [name]
-    result = USE_REGISTRY_CONTEXTS ? "docker-image://${tagged(name)[0]}" : "target:${name}"
+    result = "docker-image://${tagged(name)[0]}"
 }
 
 target "_base" {
@@ -57,9 +46,7 @@ target "_base" {
   labels = LABELS
 
   args = {
-    CLOVER2_SIM_VERSION = "${CLOVER2_SIM_VERSION}"
-    CLOVER2_SIM_BASE_VERSION = "${CLOVER2_SIM_BASE_VERSION}"
-    CLOVER2_SIM_GIT_HASH = "${CLOVER2_SIM_GIT_HASH}"
+    CLOVER2_DEV_GIT_HASH = "${CLOVER2_DEV_GIT_HASH}"
   }
 
   cache-from = ["type=local,src=.cache/docker"]
