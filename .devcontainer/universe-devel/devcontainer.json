@@ -16,6 +16,18 @@
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
       },
-    },
-  },
+      "extensions": [
+        "betwo.b2-catkin-tools",
+        "DotJoshJohnson.xml",
+        "ms-azuretools.vscode-docker",
+        "ranch-hand-robotics.rde-pack",
+        "ms-python.python",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one",
+        "zachflower.uncrustify",
+      ]
+    }
+  }
 }

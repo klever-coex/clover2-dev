@@ -5,14 +5,6 @@
     "../../docker/devcontainer/universe-devel.compose.yaml",
     "../../docker/devcontainer/universe-devel-nvidia.compose.yaml",
   ],
-  "runArgs": [
-    "--gpus", "all",
-    "--env", "NVIDIA_VISIBLE_DEVICES=all"
-  ],
-  "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}",
-    "NVIDIA_DRIVER_CAPABILITIES": "all"
-  },
   "service": "clover2-dev-devel",
   "workspaceFolder": "/home/dev/clover2-dev",
   "containerUser": "root",
@@ -24,7 +16,23 @@
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"
-      }
+      },
+      "extensions": [
+        "betwo.b2-catkin-tools",
+        "DotJoshJohnson.xml",
+        "ms-azuretools.vscode-docker",
+        "ranch-hand-robotics.rde-pack",
+        "ms-python.python",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one",
+        "zachflower.uncrustify",
+      ]
     }
+  },
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "NVIDIA_DRIVER_CAPABILITIES": "all"
   }
 }
