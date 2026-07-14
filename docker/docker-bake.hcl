@@ -41,8 +41,8 @@ function "tagged" {
 }
 
 function "ctx" {
-    params = [name]
-    result = USE_REGISTRY_CONTEXTS ? "docker-image://${tagged(name)[0]}" : "target:${name}"
+    params = [image_name, target_name]
+    result = USE_REGISTRY_CONTEXTS ? "docker-image://${tagged(image_name)[0]}" : "target:${target_name}"
 }
 
 target "_base" {
@@ -81,7 +81,7 @@ target "core-devel" {
     inherits = ["_base"]
 
     contexts = {
-        clover2-base = ctx("clover2-base")
+        clover2-base = ctx("clover2-base", "base")
     }
 
     args = {

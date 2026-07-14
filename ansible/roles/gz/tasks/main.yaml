@@ -72,7 +72,7 @@
 
 - name: Install Gazebo ROS2 Bridge
   become: true
-  ansible.buildin.apt:
+  ansible.builtin.apt:
     name:
       - ros-{{ ros_distro }}-ros-gz-sim
       - ros-{{ ros_distro }}-ros-gz-bridge
