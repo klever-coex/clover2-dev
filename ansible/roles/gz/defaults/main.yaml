@@ -1,0 +1,11 @@
+---
+gz_version: "harmonic"
+
+# Corresponding gz-sim major version
+# harmonic=8, garden=7, ionic=9
+gz_sim_version:
+  harmonic: 8
+  garden: 7
+  ionic: 9
+
+ros_distro: "{{ lookup('env', 'ROS_DISTRO') | default('jazzy', true) }}"

@@ -1,0 +1,21 @@
+{
+  "name": "clover2-dev:universe-devel",
+  "dockerComposeFile": [
+    "../../docker/devcontainer/common.compose.yaml",
+    "../../docker/devcontainer/universe-devel.compose.yaml",
+  ],
+  "service": "clover2-dev-devel",
+  "workspaceFolder": "/home/dev/clover2-dev",
+  "containerUser": "root",
+  "remoteUser": "dev",
+  "overrideCommand": false,
+  "initializeCommand": "xhost +local:docker",
+  "postCreateCommand": "echo 'source /opt/ros/$ROS_DISTRO/setup.bash' >> ~/.bashrc",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+      },
+    },
+  },
+}

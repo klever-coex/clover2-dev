@@ -1,0 +1,24 @@
+- name: Install dependencies
+  hosts: "{{ target | default('local') }}"
+  vars:
+    ros_distro: "jazzy"
+    gz_version: "harmonic"
+
+  roles:
+    - role: clover2.dev.px4_deps
+      tags: [simulation]
+    
+    - role: clover2.dev.geographiclib
+      tags: [core, simulation]
+
+    - role: clover2.dev.ros2_extra
+      tags: [core, simulation]
+
+    - role: clover2.dev.mavros
+      tags: [core, simulation]
+
+    - role: clover2.dev.ros2_dev_tools
+      tags: [dev, core, simulation]
+
+    - role: clover2.dev.gz
+      tags: [simulation]

@@ -1,0 +1,13 @@
+/build
+/install
+/log
+
+/.vscode
+/.zed
+
+.cache
+
+*.DS_Store
+
+*.pyc
+__pycache__

@@ -1,0 +1,13 @@
+---
+- name: Install MAVROS packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - "ros-{{ ros_distro }}-mavros"
+      - "ros-{{ ros_distro }}-mavros-extras"
+      - "ros-{{ ros_distro }}-mavros-msgs"
+    state: latest
+    update_cache: true
+  tags:
+    - mavros
+    - ros-extra

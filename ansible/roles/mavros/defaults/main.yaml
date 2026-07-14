@@ -1,0 +1,3 @@
+---
+# ROS distro used to resolve package names (e.g. ros-jazzy-mavros)
+ros_distro: "{{ lookup('env', 'ROS_DISTRO') | default('jazzy', true) }}"

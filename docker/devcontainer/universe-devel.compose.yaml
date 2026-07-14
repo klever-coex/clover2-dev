@@ -1,0 +1,15 @@
+services:
+  clover2-dev-devel:
+    image: ghcr.io/klever-coex/clover2-dev/clover2-core:test
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - NO_AT_BRIDGE=1
+      - XDG_RUNTIME_DIR=/run/user/${HOST_UID:-1000}
+      - XAUTHORITY=${XAUTHORITY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /run/user:/run/user:ro
+      - /dev/dri:/dev/dri
+    devices:
+      - /dev/dri:/dev/dri

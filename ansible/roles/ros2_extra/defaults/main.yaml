@@ -1,0 +1,2 @@
+---
+ros_distro: "{{ lookup('env', 'ROS_DISTRO') | default('jazzy', true) }}"

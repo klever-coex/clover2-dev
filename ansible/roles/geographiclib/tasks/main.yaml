@@ -1,0 +1,18 @@
+---
+- name: Install geographiclib-tools
+  become: true
+  ansible.builtin.apt:
+    name:
+      - geographiclib-tools
+    state: latest
+    update_cache: true
+  tags:
+    - geographiclib
+
+- name: Download and run MAVROS GeographicLib datasets installer
+  become: true
+  ansible.builtin.shell:
+    cmd: "wget -qO- {{ geographiclib_datasets_url }} | bash"
+  changed_when: false
+  tags:
+    - geographiclib

@@ -1,0 +1,3 @@
+---
+# PX4 version to install dependencies for
+px4_version: "v1.16.1"

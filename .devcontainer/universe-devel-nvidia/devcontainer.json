@@ -1,0 +1,30 @@
+{
+  "name": "clover2-dev:universe-devel (NVIDIA)",
+  "dockerComposeFile": [
+    "../../docker/devcontainer/common.compose.yaml",
+    "../../docker/devcontainer/universe-devel.compose.yaml",
+    "../../docker/devcontainer/universe-devel-nvidia.compose.yaml",
+  ],
+  "runArgs": [
+    "--gpus", "all",
+    "--env", "NVIDIA_VISIBLE_DEVICES=all"
+  ],
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "NVIDIA_DRIVER_CAPABILITIES": "all"
+  },
+  "service": "clover2-dev-devel",
+  "workspaceFolder": "/home/dev/clover2-dev",
+  "containerUser": "root",
+  "remoteUser": "dev",
+  "overrideCommand": false,
+  "initializeCommand": "xhost +local:docker",
+  "postCreateCommand": "echo 'source /opt/ros/$ROS_DISTRO/setup.bash' >> ~/.bashrc",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

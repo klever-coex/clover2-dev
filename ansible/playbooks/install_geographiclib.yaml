@@ -1,0 +1,6 @@
+- name: Install GeographicLib datasets
+  hosts: "{{ target | default('local') }}"
+
+  roles:
+    - role: clover2.dev.geographiclib
+      tags: [geographiclib]

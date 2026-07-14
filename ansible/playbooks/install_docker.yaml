@@ -1,0 +1,6 @@
+- name: Install Docker and nvidia-container-toolkit
+  hosts: "{{ target | default('local') }}"
+
+  roles:
+    - role: clover2.dev.docker
+      tags: [docker]

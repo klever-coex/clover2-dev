@@ -1,0 +1,16 @@
+---
+- name: Install ROS extra packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - "ros-{{ ros_distro }}-camera-info-manager"
+      - "ros-{{ ros_distro }}-cv-bridge"
+      - "ros-{{ ros_distro }}-diagnostics"
+      - "ros-{{ ros_distro }}-image-geometry"
+      - "ros-{{ ros_distro }}-image-view"
+      - "ros-{{ ros_distro }}-tf-transformations"
+      - "ros-{{ ros_distro }}-web-video-server"
+    state: latest
+    update_cache: true
+  tags:
+    - ros-extra

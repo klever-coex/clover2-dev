@@ -1,0 +1,5 @@
+repositories:
+  clover2-sim:
+    type: git
+    url: https://github.com/klever-coex/clover2-sim.git
+    version: master

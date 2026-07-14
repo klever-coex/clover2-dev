@@ -1,0 +1,71 @@
+---
+- name: Check for existing OSRF keyring
+  ansible.builtin.stat:
+    path: /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
+  register: gz__osrf_keyring
+  tags:
+    - gz
+    - simulation
+
+- name: Set signed-by keyring path
+  ansible.builtin.set_fact:
+    gz__keyring_path: >-
+      {{ '/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg'
+         if gz__osrf_keyring.stat.exists
+         else '/etc/apt/keyrings/gazebo.gpg' }}
+  tags:
+    - gz
+    - simulation
+
+- name: Create keyrings directory
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  when: not gz__osrf_keyring.stat.exists
+  tags:
+    - gz
+    - simulation
+
+- name: Add Gazebo GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: http://packages.osrfoundation.org/gazebo.key
+    dest: /etc/apt/keyrings/gazebo.gpg
+    mode: "0644"
+  when: not gz__osrf_keyring.stat.exists
+  tags:
+    - gz
+    - simulation
+
+- name: Save result of 'lsb_release -cs'
+  ansible.builtin.command: lsb_release -cs
+  register: gz__lsb_release_cs
+  changed_when: false
+  tags:
+    - gz
+    - simulation
+
+- name: Add Gazebo apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64,arm64 signed-by={{ gz__keyring_path }}] http://packages.osrfoundation.org/gazebo/ubuntu-stable {{ gz__lsb_release_cs.stdout }} main"
+    filename: gazebo-stable
+    state: present
+    update_cache: true
+  tags:
+    - gz
+    - simulation
+
+- name: Install Gazebo (gz-{{ gz_version }})
+  become: true
+  ansible.builtin.apt:
+    name:
+      - "libgz-sim{{ gz_sim_version[gz_version] }}-dev"
+      - "gz-{{ gz_version }}"
+    state: latest
+    update_cache: true
+  tags:
+    - gz
+    - simulation

@@ -1,0 +1,6 @@
+- name: Install MAVROS
+  hosts: "{{ target | default('local') }}"
+
+  roles:
+    - role: clover2.dev.mavros
+      tags: [mavros]

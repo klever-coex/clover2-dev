@@ -1,0 +1,15 @@
+services:
+  clover2-dev-devel:
+    pull_policy: never # TODO: remove 
+    privileged: true
+    network_mode: host
+    stdin_open: true
+    tty: true
+    environment:
+      - HOST_UID=${HOST_UID:-1000}
+      - HOST_GID=${HOST_GID:-1000}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    volumes:
+      - ../..:/home/dev/clover2-dev
+    working_dir: /home/dev/clover2-dev
+    command: bash

@@ -1,0 +1,6 @@
+- name: Install Gazebo {{ gz_version | default('harmonic') }}
+  hosts: "{{ target | default('local') }}"
+
+  roles:
+    - role: clover2.dev.gz
+      tags: [gz, simulation]

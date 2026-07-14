@@ -1,0 +1,21 @@
+- name: Install apt packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - python3-colcon-common-extensions
+      - python3-colcon-mixin
+      - python3-pip
+      - python3-rosdep
+      - ros-build-essential
+      - ros-dev-tools
+      - wget
+      - ccache
+    state: latest
+    allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
+    update_cache: true
+
+- name: Run 'sudo rosdep init'
+  become: true
+  ansible.builtin.command:
+    cmd: rosdep init
+    creates: /etc/ros/rosdep/sources.list.d/20-default.list

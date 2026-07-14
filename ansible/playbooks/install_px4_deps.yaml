@@ -1,0 +1,6 @@
+- name: Install PX4 build dependencies
+  hosts: "{{ target | default('local') }}"
+
+  roles:
+    - role: clover2.dev.px4_deps
+      tags: [px4]
