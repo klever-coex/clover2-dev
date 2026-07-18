@@ -65,3 +65,4 @@ jobs:
             BUILD_MODE=${{ needs.detect-mode.outputs.build_mode }}
             CLOVER2_DEV_GIT_HASH=${{ needs.detect-mode.outputs.git_hash }}
             CLOVER2_DEV_VERSION=${{ needs.detect-mode.outputs.version }}
+            USE_REGISTRY_CONTEXTS=false
