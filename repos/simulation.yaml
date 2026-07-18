@@ -1,10 +1,10 @@
+---
 repositories:
-  clover2-sim:
-    type: git
-    url: https://github.com/klever-coex/clover2-sim.git
-    version: feature/clover2-dev
-
   clover2:
     type: git
     url: https://github.com/klever-coex/clover2.git
+    version: feature/clover2-dev
+  clover2-sim:
+    type: git
+    url: https://github.com/klever-coex/clover2-sim.git
     version: feature/clover2-dev

@@ -46,25 +46,18 @@ jobs:
   docker:
     needs: detect-mode
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      actions: write
     steps:
       - uses: actions/checkout@v5
 
-      - uses: ./.github/actions/docker-setup
+      - uses: ./.github/actions/docker-build
         with:
           ghcr-token: ${{ secrets.GH_PAT }}
-
-      - name: Build and push
-        uses: docker/bake-action@v7
-        with:
-          source: .
-          files: docker/docker-bake.hcl
-          targets: default
-          push: true
-          set: |
-            *.cache-from=type=gha,scope=clover2-dev
-            *.cache-to=type=gha,scope=clover2-dev,mode=max
-          vars: |
-            BUILD_MODE=${{ needs.detect-mode.outputs.build_mode }}
-            CLOVER2_DEV_GIT_HASH=${{ needs.detect-mode.outputs.git_hash }}
-            CLOVER2_DEV_VERSION=${{ needs.detect-mode.outputs.version }}
-            USE_REGISTRY_CONTEXTS=false
+          bake-target: default
+          needs-source: true
+          build-mode: ${{ needs.detect-mode.outputs.build_mode }}
+          git-hash: ${{ needs.detect-mode.outputs.git_hash }}
+          version: ${{ needs.detect-mode.outputs.version }}

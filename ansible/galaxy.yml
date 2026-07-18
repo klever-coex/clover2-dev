@@ -5,6 +5,5 @@ readme: README.md
 authors:
   - matveylapin <2663161@mail.ru>
 
-description: Set up development environment for Autoware
 tags:
   - clover2

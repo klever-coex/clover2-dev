@@ -1,6 +1,6 @@
 services:
   clover2-dev-devel:
-    image: ghcr.io/klever-coex/clover2-dev/clover2-core:test
+    image: ghcr.io/klever-coex/clover2-dev/clover2-core:latest
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1

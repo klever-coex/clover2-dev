@@ -1,0 +1,58 @@
+name: Docker Build
+description: Build docker bake
+
+inputs:
+  ghcr-token:
+    description: Token for GHCR authentication
+    required: true
+  needs-source:
+    description: Clone repos to build
+    type: boolean
+    default: true
+  bake-target:
+    description: Build specific target
+    type: string
+    default: default
+  build-mode:
+    description: Build mode (master, develop, release)
+    type: string
+    default: develop
+  git-hash:
+    description: Short git hash for image tagging
+    type: string
+    default: ''
+  version:
+    description: Version string for release builds
+    type: string
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/docker-setup
+      with:
+        ghcr-token: ${{ inputs.ghcr-token }}
+
+    - name: Import VCS source repos
+      if: inputs.needs-source
+      shell: bash
+      run: |
+        pipx install vcs2l
+        mkdir -p src
+        vcs import --shallow src < repos/simulation.yaml
+
+    - name: Build and push
+      uses: docker/bake-action@v7
+      with:
+        source: .
+        files: docker/docker-bake.hcl
+        targets: ${{ inputs.bake-target }}
+        push: true
+        set: |
+          *.cache-from=type=gha,scope=clover2-dev
+          *.cache-to=type=gha,scope=clover2-dev,mode=max
+        vars: |
+          BUILD_MODE=${{ inputs.build-mode }}
+          CLOVER2_DEV_GIT_HASH=${{ inputs.git-hash }}
+          CLOVER2_DEV_VERSION=${{ inputs.version }}
+          USE_REGISTRY_CONTEXTS=false
