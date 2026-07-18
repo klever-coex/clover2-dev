@@ -50,6 +50,8 @@ jobs:
       - uses: actions/checkout@v5
 
       - uses: ./.github/actions/docker-setup
+        with:
+          ghcr-token: ${{ secrets.GH_PAT }}
 
       - name: Build and push
         uses: docker/bake-action@v7
