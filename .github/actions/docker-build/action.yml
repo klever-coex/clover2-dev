@@ -13,6 +13,18 @@ inputs:
     description: Build specific target
     type: string
     default: default
+  build-mode:
+    description: Build mode (master, develop, release)
+    type: string
+    default: develop
+  git-hash:
+    description: Short git hash for image tagging
+    type: string
+    default: ''
+  version:
+    description: Version string for release builds
+    type: string
+    default: ''
 
 runs:
   using: composite
@@ -40,7 +52,7 @@ runs:
           *.cache-from=type=gha,scope=clover2-dev
           *.cache-to=type=gha,scope=clover2-dev,mode=max
         vars: |
-          BUILD_MODE=${{ needs.detect-mode.outputs.build_mode }}
-          CLOVER2_DEV_GIT_HASH=${{ needs.detect-mode.outputs.git_hash }}
-          CLOVER2_DEV_VERSION=${{ needs.detect-mode.outputs.version }}
+          BUILD_MODE=${{ inputs.build-mode }}
+          CLOVER2_DEV_GIT_HASH=${{ inputs.git-hash }}
+          CLOVER2_DEV_VERSION=${{ inputs.version }}
           USE_REGISTRY_CONTEXTS=false

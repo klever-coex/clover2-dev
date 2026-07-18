@@ -58,3 +58,6 @@ jobs:
           ghcr-token: ${{ secrets.GH_PAT }}
           bake-target: default
           needs-source: true
+          build-mode: ${{ needs.detect-mode.outputs.build_mode }}
+          git-hash: ${{ needs.detect-mode.outputs.git_hash }}
+          version: ${{ needs.detect-mode.outputs.version }}
