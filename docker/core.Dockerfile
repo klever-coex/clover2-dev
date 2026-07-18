@@ -21,7 +21,7 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     -e rosdistro=${ROS_DISTRO} && \
     pipx uninstall ansible
 
-COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/clover2-dev/
+COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/clover2-dev
 
 USER root
 

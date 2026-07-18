@@ -53,18 +53,6 @@ jobs:
         with:
           ghcr-token: ${{ secrets.GH_PAT }}
 
-      - name: Build and push
-        uses: docker/bake-action@v7
+      - uses: ./.github/actions/docker-setup
         with:
-          source: .
-          files: docker/docker-bake.hcl
-          targets: default
-          push: true
-          set: |
-            *.cache-from=type=gha,scope=clover2-dev
-            *.cache-to=type=gha,scope=clover2-dev,mode=max
-          vars: |
-            BUILD_MODE=${{ needs.detect-mode.outputs.build_mode }}
-            CLOVER2_DEV_GIT_HASH=${{ needs.detect-mode.outputs.git_hash }}
-            CLOVER2_DEV_VERSION=${{ needs.detect-mode.outputs.version }}
-            USE_REGISTRY_CONTEXTS=false
+          ghcr-token: ${{ secrets.GH_PAT }}
