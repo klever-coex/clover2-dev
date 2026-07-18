@@ -9,7 +9,7 @@ services:
       - XAUTHORITY=${XAUTHORITY}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /run/user:/run/user:ro
+      - /run/user:/run/user
       - /dev/dri:/dev/dri
     devices:
       - /dev/dri:/dev/dri

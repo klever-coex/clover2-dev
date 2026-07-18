@@ -9,9 +9,4 @@ fi
 # shellcheck source=/dev/null
 source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
-if [ -f "/home/${USERNAME}/ws/install/setup.bash" ]; then
-    # shellcheck source=/dev/null
-    source "/home/${USERNAME}/ws/install/setup.bash"
-fi
-
 exec gosu "${USERNAME}" "$@"

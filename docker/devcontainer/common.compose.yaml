@@ -1,6 +1,5 @@
 services:
   clover2-dev-devel:
-    pull_policy: never # TODO: remove 
     privileged: true
     network_mode: host
     stdin_open: true
