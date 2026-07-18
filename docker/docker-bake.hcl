@@ -1,10 +1,9 @@
 variable "BUILD_MODE" { }
-variable "DOCKER_OUTPUT_DIR" { }
-variable "REGISTRY_POLICY" { }
 variable "REGISTRY" { default = "ghcr.io/klever-coex/clover2-dev/" }
 variable "ROS_DISTRO" { default = "jazzy" }
 
 variable "CLOVER2_DEV_GIT_HASH" { }
+variable "CLOVER2_DEV_VERSION" { }
 
 variable "USE_REGISTRY_CONTEXTS" {
   default = true
@@ -32,11 +31,14 @@ function "tagged" {
     result = compact(concat(
         ["${REGISTRY}${name}:${CLOVER2_DEV_GIT_HASH}"],
 
-        # For master build have dirty version and latest tag
+        # For master build have latest tag
         BUILD_MODE == "master" ? ["${REGISTRY}${name}:latest"] : [],
 
-        # For develop build have dirty version tag
-        # Only version tag
+        # For develop build only git hash tag
+
+        # Releases have version and stable tags
+        BUILD_MODE == "release" ? ["${REGISTRY}${name}:stable"] : [],
+        BUILD_MODE == "release" ? ["${REGISTRY}${name}:${CLOVER2_DEV_VERSION}"] : [],
     ))
 }
 

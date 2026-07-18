@@ -4,6 +4,8 @@ on:
   push:
     branches: [master]
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
 
 concurrency:
@@ -19,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_mode: ${{ steps.detect.outputs.build_mode }}
+      git_hash: ${{ steps.detect.outputs.git_hash }}
+      version: ${{ steps.detect.outputs.version }}
     steps:
       - name: Detect build mode
         id: detect
@@ -26,40 +30,38 @@ jobs:
         run: |
           case "${{ github.ref }}" in
             refs/heads/master)
-              echo "build_mode=master" >> "$GITHUB_OUTPUT" ;;
+              echo "build_mode=master" >> "$GITHUB_OUTPUT"
+              ;;
+            refs/tags/*)
+              echo "build_mode=release" >> "$GITHUB_OUTPUT"
+              echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+              ;;
             *)
-              echo "build_mode=develop" >> "$GITHUB_OUTPUT" ;;
+              echo "build_mode=develop" >> "$GITHUB_OUTPUT"
+              ;;
           esac
+          HASH="${{ github.sha }}"
+          echo "git_hash=${HASH:0:7}" >> "$GITHUB_OUTPUT"
 
   docker:
     needs: detect-mode
     runs-on: ubuntu-latest
-    env:
-      BUILD_MODE: ${{ needs.detect-mode.outputs.build_mode }}
-      USE_REGISTRY_CONTEXTS: false
-
     steps:
       - uses: actions/checkout@v5
 
-      - name: Compute version
-        id: vars
-        shell: bash
-        run: |
-          HASH=$(git rev-parse --short HEAD)
-          echo "git_hash=$HASH" >> "$GITHUB_OUTPUT"
-
       - uses: ./.github/actions/docker-setup
 
-      - name: Restore Docker cache
-        uses: actions/cache@v5
+      - name: Build and push
+        uses: docker/bake-action@v7
         with:
-          path: .cache
-          key: docker-cache-${{ github.run_id }}
-          restore-keys: docker-cache-
-
-      - uses: ./.github/actions/docker-bake
-        env:
-          CLOVER2_DEV_GIT_HASH: ${{ steps.vars.outputs.git_hash }}
-        with:
-          target: default
+          source: .
+          files: docker/docker-bake.hcl
+          targets: default
           push: true
+          set: |
+            *.cache-from=type=gha,scope=clover2-dev
+            *.cache-to=type=gha,scope=clover2-dev,mode=max
+          vars: |
+            BUILD_MODE=${{ needs.detect-mode.outputs.build_mode }}
+            CLOVER2_DEV_GIT_HASH=${{ needs.detect-mode.outputs.git_hash }}
+            CLOVER2_DEV_VERSION=${{ needs.detect-mode.outputs.version }}
