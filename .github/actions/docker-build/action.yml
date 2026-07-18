@@ -39,7 +39,7 @@ runs:
       run: |
         pipx install vcs2l
         mkdir -p src
-        vcs import --shallow src < repos/simulation.repos
+        vcs import --shallow src < repos/simulation.yaml
 
     - name: Build and push
       uses: docker/bake-action@v7
