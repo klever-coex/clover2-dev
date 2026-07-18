@@ -46,13 +46,15 @@ jobs:
   docker:
     needs: detect-mode
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      actions: write
     steps:
       - uses: actions/checkout@v5
 
-      - uses: ./.github/actions/docker-setup
+      - uses: ./.github/actions/docker-build
         with:
           ghcr-token: ${{ secrets.GH_PAT }}
-
-      - uses: ./.github/actions/docker-setup
-        with:
-          ghcr-token: ${{ secrets.GH_PAT }}
+          bake-target: default
+          needs-source: true
