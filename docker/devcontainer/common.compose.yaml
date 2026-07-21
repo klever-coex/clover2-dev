@@ -2,6 +2,7 @@ services:
   clover2-dev-devel:
     privileged: true
     network_mode: host
+    ipc: host
     stdin_open: true
     tty: true
     environment:
