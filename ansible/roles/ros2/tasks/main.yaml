@@ -34,6 +34,14 @@
     - ros2
     - core
 
+- name: Update apt cache (ROS 2 repo added by ros2-apt-source)
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+  tags:
+    - ros2
+    - core
+
 - name: Delete .deb
   ansible.builtin.file:
     path: /tmp/ros2-apt-source.deb
@@ -48,7 +56,6 @@
     name: ros-{{ ros_distro }}-{{ ros2_installation_type }}
     state: present
     allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
-    update_cache: true
   tags:
     - ros2
     - core

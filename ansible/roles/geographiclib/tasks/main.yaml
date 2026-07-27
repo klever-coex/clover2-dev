@@ -1,4 +1,8 @@
 ---
+# The original approach piped a shell script from raw.githubusercontent.com.
+# Rewritten as native Ansible tasks for idempotency and security.
+# Source: https://github.com/mavlink/mavros/blob/master/mavros/scripts/install_geographiclib_datasets.sh
+
 - name: Install geographiclib-tools
   become: true
   ansible.builtin.apt:
@@ -20,7 +24,7 @@
     - core
     - simulation
 
-- name: "Install GeographicLib datasets"
+- name: Install GeographicLib datasets via geographiclib-get-geoids
   become: true
   ansible.builtin.command:
     cmd: "geographiclib-get-{{ item.tool }} {{ item.model }}"
@@ -44,14 +48,13 @@
     - core
     - simulation
 
-- name: Install GeographicLib datasets
+- name: Install GeographicLib datasets via geographiclib-datasets-download
   become: true
   ansible.builtin.command:
     cmd: geographiclib-datasets-download egm96_5
   when:
     - not geo__has_geoids_tool.stat.exists
     - geo__has_datasets_tool.stat.exists | default(false)
-  changed_when: false
   tags:
     - geographiclib
     - core
