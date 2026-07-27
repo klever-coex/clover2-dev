@@ -1,4 +1,4 @@
 ---
 ros_distro: "{{ lookup('env', 'ROS_DISTRO') | default('jazzy', true) }}"
-ros2_installation_type: core
+ros2_installation_type: ros-core
 use_locked_versions: false
