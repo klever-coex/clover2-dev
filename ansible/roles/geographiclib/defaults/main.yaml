@@ -1,2 +1,3 @@
 ---
-geographiclib_datasets_url: "https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh"
+# GeographicLib datasets are installed via native ansible tasks.
+# See tasks/main.yaml for the three dataset models (geoids, gravity, magnetic).

@@ -5,9 +5,12 @@
     gz_version: "harmonic"
 
   roles:
+    - role: clover2.dev.ros2
+      tags: [core, simulation]
+
     - role: clover2.dev.px4_deps
       tags: [simulation]
-    
+
     - role: clover2.dev.geographiclib
       tags: [core, simulation]
 

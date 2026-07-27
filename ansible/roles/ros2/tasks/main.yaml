@@ -1,53 +1,65 @@
+---
 - name: Get latest release information of ros-apt-source package
   ansible.builtin.uri:
     url: https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest
     method: GET
     return_content: true
   register: ros2__ros_apt_release_info
+  tags:
+    - ros2
+    - core
 
 - name: Extract latest version of ros-apt-source package
   ansible.builtin.set_fact:
     ros2__ros_apt_source_version: "{{ (ros2__ros_apt_release_info.content | from_json).tag_name }}"
-
-- name: Save ubuntu_codename
-  ansible.builtin.shell: bash -c 'source /etc/os-release && echo $UBUNTU_CODENAME'
-  register: ros2__ubuntu_codename
-  changed_when: false
+  tags:
+    - ros2
+    - core
 
 - name: Get ros2-apt-source package
   ansible.builtin.get_url:
-    url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros2__ros_apt_source_version }}/ros2-apt-source_{{ ros2__ros_apt_source_version }}.{{ ros2__ubuntu_codename.stdout }}_all.deb
+    url: https://github.com/ros-infrastructure/ros-apt-source/releases/download/{{ ros2__ros_apt_source_version }}/ros2-apt-source_{{ ros2__ros_apt_source_version }}.{{ ansible_facts['lsb']['codename'] }}_all.deb
     dest: /tmp/ros2-apt-source.deb
     mode: "0644"
+  tags:
+    - ros2
+    - core
 
 - name: Install ros2-apt-source package
+  become: true
   ansible.builtin.apt:
     deb: /tmp/ros2-apt-source.deb
     state: present
-  become: true
+  tags:
+    - ros2
+    - core
 
 - name: Delete .deb
   ansible.builtin.file:
     path: /tmp/ros2-apt-source.deb
     state: absent
+  tags:
+    - ros2
+    - core
 
-- name: Install ros-{{ rosdistro + '-' + ros2_installation_type }}
+- name: Install ros-{{ ros_distro }}-{{ ros2_installation_type }}
   become: true
   ansible.builtin.apt:
-    name: ros-{{ rosdistro }}-{{ ros2_installation_type }}
-    state: latest
+    name: ros-{{ ros_distro }}-{{ ros2_installation_type }}
+    state: present
     allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
-  register: ros2_install_result
-  failed_when: false
+  tags:
+    - ros2
+    - core
 
-- name: Add PATH to .bashrc
-  become: true
+- name: Add ROS 2 setup.bash to user's .bashrc
   ansible.builtin.lineinfile:
-    dest: "{{ item }}"
-    line: source /opt/ros/{{ rosdistro }}/setup.bash
+    dest: "{{ ansible_env.HOME }}/.bashrc"
+    line: source /opt/ros/{{ ros_distro }}/setup.bash
     state: present
     create: true
     mode: 0644
-  loop:
-    - ~/.bashrc
+  tags:
+    - ros2
+    - core

@@ -1,3 +1,4 @@
+---
 - name: Install apt packages
   become: true
   ansible.builtin.apt:
@@ -10,12 +11,21 @@
       - ros-dev-tools
       - wget
       - ccache
-    state: latest
+    state: present
     allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
-    update_cache: true
+  tags:
+    - ros2-dev-tools
+    - dev
+    - core
+    - simulation
 
 - name: Run 'sudo rosdep init'
   become: true
   ansible.builtin.command:
     cmd: rosdep init
     creates: /etc/ros/rosdep/sources.list.d/20-default.list
+  tags:
+    - ros2-dev-tools
+    - dev
+    - core
+    - simulation

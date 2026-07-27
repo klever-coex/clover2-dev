@@ -5,7 +5,7 @@
   register: px4_tmpdir
   tags:
     - px4
-    - px4-deps
+    - simulation
 
 - name: Download PX4 setup script (ubuntu.sh)
   ansible.builtin.get_url:
@@ -14,21 +14,22 @@
     mode: "0755"
   tags:
     - px4
-    - px4-deps
-
-- name: Download PX4 Python requirements
-  ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/PX4/PX4-Autopilot/{{ px4_version }}/Tools/setup/requirements.txt"
-    dest: "{{ px4_tmpdir.path }}/requirements.txt"
-  tags:
-    - px4
-    - px4-deps
+    - simulation
 
 - name: Run PX4 ubuntu.sh setup script
   become: true
   ansible.builtin.command:
     cmd: "bash {{ px4_tmpdir.path }}/ubuntu.sh"
-  changed_when: false
+  changed_when: true
   tags:
     - px4
-    - px4-deps
+    - simulation
+
+- name: Clean up PX4 temporary directory
+  ansible.builtin.file:
+    path: "{{ px4_tmpdir.path }}"
+    state: absent
+  when: px4_tmpdir is defined
+  tags:
+    - px4
+    - simulation

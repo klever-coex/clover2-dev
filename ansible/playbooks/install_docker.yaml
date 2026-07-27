@@ -1,4 +1,4 @@
-- name: Install Docker and nvidia-container-toolkit
+- name: Install Docker Engine
   hosts: "{{ target | default('local') }}"
 
   roles:

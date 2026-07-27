@@ -1,3 +1,4 @@
+---
 - name: Remove old
   become: true
   ansible.builtin.apt:
@@ -8,6 +9,8 @@
       - containerd
     state: absent
     update_cache: true
+  tags:
+    - docker
 
 - name: Install dependencies
   become: true
@@ -17,43 +20,45 @@
       - curl
       - gnupg
       - lsb-release
+    state: present
     update_cache: true
+  tags:
+    - docker
 
 - name: Create the directory for keyrings
   become: true
   ansible.builtin.file:
     state: directory
     path: /etc/apt/keyrings
-    mode: 0755
+    mode: "0755"
+  tags:
+    - docker
 
-- name: Authorize Docker GPG key
+- name: Download Docker GPG key
   become: true
-  ansible.builtin.apt_key:
+  ansible.builtin.get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
-    keyring: /etc/apt/keyrings/docker.gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+  tags:
+    - docker
 
 - name: Save result of 'dpkg --print-architecture'
   ansible.builtin.command: dpkg --print-architecture
   register: docker_engine__deb_architecture
   changed_when: false
-
-- name: Save result of 'lsb_release -cs'
-  ansible.builtin.command: lsb_release -cs
-  register: docker_engine__lsb_release_cs
-  changed_when: false
-
-- name: Save result of 'lsb_release -is'
-  ansible.builtin.command: lsb_release -is
-  register: docker_engine__lsb_release_is
-  changed_when: false
+  tags:
+    - docker
 
 - name: Add Docker apt repository to source list
   become: true
   ansible.builtin.apt_repository:
-    repo: deb [arch={{ docker_engine__deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ docker_engine__lsb_release_is.stdout | lower }} {{ docker_engine__lsb_release_cs.stdout }} stable
+    repo: deb [arch={{ docker_engine__deb_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/{{ ansible_facts['lsb']['id'] | lower }} {{ ansible_facts['lsb']['codename'] }} stable
     filename: docker
     state: present
     update_cache: true
+  tags:
+    - docker
 
 - name: Install Docker Engine
   become: true
@@ -63,14 +68,19 @@
       - docker-ce-cli
       - containerd.io
       - docker-compose-v2
+    state: present
     allow_downgrade: "{{ use_locked_versions | default(false) | bool }}"
     update_cache: true
+  tags:
+    - docker
 
 - name: Add docker group
   become: true
   ansible.builtin.group:
     name: docker
     state: present
+  tags:
+    - docker
 
 - name: Add user to docker group
   become: true
@@ -78,3 +88,5 @@
     name: "{{ ansible_user_id }}"
     groups: docker
     append: true
+  tags:
+    - docker

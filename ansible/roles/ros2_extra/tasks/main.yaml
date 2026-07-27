@@ -10,7 +10,8 @@
       - "ros-{{ ros_distro }}-image-view"
       - "ros-{{ ros_distro }}-tf-transformations"
       - "ros-{{ ros_distro }}-web-video-server"
-    state: latest
-    update_cache: true
+    state: present
   tags:
-    - ros-extra
+    - ros2-extra
+    - core
+    - simulation
