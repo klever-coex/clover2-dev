@@ -22,6 +22,7 @@ variable "LABELS" {
 variable "PLATFORMS" {
   default = [
     "linux/amd64",
+    "linux/arm64",
   ]
 }
 
@@ -50,6 +51,7 @@ function "ctx" {
 target "_base" {
   context = "."
   labels = LABELS
+  platforms = PLATFORMS
 
   args = {
     CLOVER2_DEV_GIT_HASH = "${CLOVER2_DEV_GIT_HASH}"
