@@ -1,61 +1,19 @@
 ---
-# The original approach piped a shell script from raw.githubusercontent.com.
-# Rewritten as native Ansible tasks for idempotency and security.
-# Source: https://github.com/mavlink/mavros/blob/master/mavros/scripts/install_geographiclib_datasets.sh
-
-- name: Install geographiclib-tools
+- name: Install geographiclib packages
   become: true
   ansible.builtin.apt:
     name:
       - geographiclib-tools
-    state: present
+      - libgeographiclib-dev
+    state: latest
     update_cache: true
-  tags:
-    - geographiclib
-    - core
-    - simulation
 
-- name: Check if geographiclib-get-geoids is available
-  ansible.builtin.stat:
-    path: /usr/bin/geographiclib-get-geoids
-  register: geo__has_geoids_tool
-  tags:
-    - geographiclib
-    - core
-    - simulation
-
-- name: Install GeographicLib datasets via geographiclib-get-geoids
+- name: Install GeographicLib datasets
   become: true
   ansible.builtin.command:
     cmd: "geographiclib-get-{{ item.tool }} {{ item.model }}"
+    creates: /usr/share/GeographicLib/{{ item.tool }}/{{ item.model }}.pgm
   loop:
     - { tool: geoids, model: egm96-5 }
     - { tool: gravity, model: egm96 }
     - { tool: magnetic, model: emm2015 }
-  when: geo__has_geoids_tool.stat.exists
-  tags:
-    - geographiclib
-    - core
-    - simulation
-
-- name: Check if geographiclib-datasets-download is available
-  ansible.builtin.stat:
-    path: /usr/bin/geographiclib-datasets-download
-  register: geo__has_datasets_tool
-  when: not geo__has_geoids_tool.stat.exists
-  tags:
-    - geographiclib
-    - core
-    - simulation
-
-- name: Install GeographicLib datasets via geographiclib-datasets-download
-  become: true
-  ansible.builtin.command:
-    cmd: geographiclib-datasets-download egm96_5
-  when:
-    - not geo__has_geoids_tool.stat.exists
-    - geo__has_datasets_tool.stat.exists | default(false)
-  tags:
-    - geographiclib
-    - core
-    - simulation
