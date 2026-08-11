@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   detect-mode:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       build_mode: ${{ steps.detect.outputs.build_mode }}
       git_hash: ${{ steps.detect.outputs.git_hash }}
@@ -45,7 +45,7 @@ jobs:
 
   docker:
     needs: detect-mode
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
