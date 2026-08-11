@@ -21,7 +21,7 @@ variable "LABELS" {
 # Platforms for deploy
 variable "PLATFORMS" {
   default = [
-    "linux/amd64",
+    // "linux/amd64",
     "linux/arm64",
   ]
 }

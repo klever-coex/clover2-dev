@@ -7,9 +7,9 @@
     - px4
     - simulation
 
-- name: Download PX4 setup script (ubuntu.sh)
-  ansible.builtin.get_url:
-    url: "https://raw.githubusercontent.com/PX4/PX4-Autopilot/{{ px4_version }}/Tools/setup/ubuntu.sh"
+- name: Copy local PX4 setup script (ubuntu.sh)
+  ansible.builtin.copy:
+    src: "{{ role_path }}/../../../ubuntu.sh"
     dest: "{{ px4_tmpdir.path }}/ubuntu.sh"
     mode: "0755"
   tags:
