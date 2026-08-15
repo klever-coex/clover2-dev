@@ -27,6 +27,8 @@
         "redhat.vscode-yaml",
         "yzhang.markdown-all-in-one",
         "zachflower.uncrustify",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "xaver.clang-format"
       ]
     }
   }
