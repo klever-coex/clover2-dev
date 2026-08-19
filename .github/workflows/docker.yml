@@ -17,8 +17,8 @@ permissions:
   packages: write
 
 jobs:
-  detect-mode:
-    runs-on: ubuntu-24.04-arm
+  prepare:
+    runs-on: ubuntu-latest
     outputs:
       build_mode: ${{ steps.detect.outputs.build_mode }}
       git_hash: ${{ steps.detect.outputs.git_hash }}
@@ -43,9 +43,17 @@ jobs:
           HASH="${{ github.sha }}"
           echo "git_hash=${HASH:0:7}" >> "$GITHUB_OUTPUT"
 
-  docker:
-    needs: detect-mode
-    runs-on: ubuntu-24.04-arm
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include: 
+          - runs-on: ubuntu-24.04
+            platform: linux/amd64
+          - runs-on: ubuntu-24.04-arm64
+            platform: linux/arm64
+    runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: read
       packages: write
@@ -53,11 +61,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: ./.github/actions/docker-build
+      - name: Build ${{ matrix.platform }}
+        id: build
+        uses: ./.github/actions/docker-build
         with:
           ghcr-token: ${{ secrets.GH_PAT }}
           bake-target: default
-          needs-source: true
-          build-mode: ${{ needs.detect-mode.outputs.build_mode }}
-          git-hash: ${{ needs.detect-mode.outputs.git_hash }}
-          version: ${{ needs.detect-mode.outputs.version }}
+          build-mode: ${{ needs.prepare.outputs.build_mode }}
+          git-hash: ${{ needs.prepare.outputs.git_hash }}
+          version: ${{ needs.prepare.outputs.version }}
+          platform: ${{ matrix.platform }}
+          push-by-digest: true
