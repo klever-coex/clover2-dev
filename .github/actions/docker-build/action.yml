@@ -63,6 +63,7 @@ runs:
         targets: ${{ inputs.bake-target }}
         push: ${{ inputs.push-by-digest != 'true' }}
         set: |
+          ${{ inputs.push-by-digest == 'true' && '*.tags=ghcr.io/${{ github.repository }}' || '' }}
           *.platform=${{ inputs.platform }}
           *.cache-from=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }}
           *.cache-to=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }},mode=max
