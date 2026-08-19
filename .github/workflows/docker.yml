@@ -65,7 +65,7 @@ jobs:
         id: build
         uses: ./.github/actions/docker-build
         with:
-          ghcr-token: ${{ secrets.GH_PAT }}
+          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
           bake-target: default
           build-mode: ${{ needs.prepare.outputs.build_mode }}
           git-hash: ${{ needs.prepare.outputs.git_hash }}
