@@ -33,7 +33,7 @@ variable "PLATFORMS" {
 # Image tags generator
 function "tagged" {
     params = [name]
-    result = PUSH_BY_DIGEST ? ["${REGISTRY}clover2-dev"] : compact(concat(
+    result = PUSH_BY_DIGEST ? ["${REGISTRY}"] : compact(concat(
         ["${REGISTRY}${name}:${CLOVER2_DEV_GIT_HASH}"],
 
         # For master build have latest tag
