@@ -51,8 +51,10 @@ jobs:
         include: 
           - runs-on: ubuntu-24.04
             platform: linux/amd64
+            arch: amd64
           - runs-on: ubuntu-24.04-arm
             platform: linux/arm64
+            arch: arm64
     runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: read
@@ -72,8 +74,33 @@ jobs:
           version: ${{ needs.prepare.outputs.version }}
           platform: ${{ matrix.platform }}
           push-by-digest: true
-      
-      - name: Print build metadata
+
+      - name: Export image digests
+        shell: bash
+        env:
+          BUILD_METADATA: ${{ steps.build.outputs.metadata }}
         run: |
-          echo "Build metadata:"
-          echo "${{ steps.build.outputs.metadata }}"
+          set -euo pipefail
+
+          digest_dir="$RUNNER_TEMP/digests/${{ matrix.arch }}"
+          mkdir -p "$digest_dir"
+
+          while IFS=$'\t' read -r target digest; do
+            printf '%s\n' "$digest" > "$digest_dir/$target"
+          done < <(
+            jq -r '
+              to_entries[]
+              | select(.value["containerimage.digest"] != null)
+              | [.key, .value["containerimage.digest"]]
+              | @tsv
+            ' <<< "$BUILD_METADATA"
+          )
+
+      - name: Upload image digests
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests
+          if-no-files-found: error
+          retention-days: 1
+
