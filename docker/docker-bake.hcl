@@ -1,5 +1,5 @@
 variable "BUILD_MODE" { }
-variable "REGISTRY" { default = "ghcr.io/klever-coex/clover2-dev/" }
+variable "REGISTRY" { default = "ghcr.io/klever-coex/clover2-dev" }
 variable "ROS_DISTRO" { default = "jazzy" }
 
 variable "CLOVER2_DEV_GIT_HASH" { }
