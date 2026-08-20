@@ -97,10 +97,78 @@ jobs:
           )
 
       - name: Upload image digests
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digests-${{ matrix.arch }}
           path: ${{ runner.temp }}/digests
           if-no-files-found: error
           retention-days: 1
 
+  merge:
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/docker-setup
+        with:
+          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download image digests
+        uses: actions/download-artifact@v8
+        with:
+          pattern: digests-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+
+      - name: Create multi-platform manifests
+        shell: bash
+        env:
+          BUILD_MODE: ${{ needs.prepare.outputs.build_mode }}
+          CLOVER2_DEV_GIT_HASH: ${{ needs.prepare.outputs.git_hash }}
+          CLOVER2_DEV_VERSION: ${{ needs.prepare.outputs.version }}
+          PUSH_BY_DIGEST: false
+          USE_REGISTRY_CONTEXTS: false
+        run: |
+          set -euo pipefail
+
+          bake_definition="$(docker buildx bake \
+            --file docker/docker-bake.hcl \
+            --print default)"
+
+          for amd64_digest_file in "$RUNNER_TEMP"/digests/amd64/*; do
+            target="$(basename "$amd64_digest_file")"
+            arm64_digest_file="$RUNNER_TEMP/digests/arm64/$target"
+
+            if [[ ! -f "$arm64_digest_file" ]]; then
+              echo "Missing arm64 digest for target $target" >&2
+              exit 1
+            fi
+
+            mapfile -t tags < <(
+              jq -r --arg target "$target" \
+                '.target[$target].tags[]' <<< "$bake_definition"
+            )
+
+            if (( ${#tags[@]} == 0 )); then
+              echo "No tags found for target $target" >&2
+              exit 1
+            fi
+
+            repository="${tags[0]%:*}"
+            tag_args=()
+            for tag in "${tags[@]}"; do
+              tag_args+=(--tag "$tag")
+            done
+
+            docker buildx imagetools create \
+              "${tag_args[@]}" \
+              "$repository@$(<"$amd64_digest_file")" \
+              "$repository@$(<"$arm64_digest_file")"
+
+            docker buildx imagetools inspect "${tags[0]}"
+          done
