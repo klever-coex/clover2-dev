@@ -72,3 +72,8 @@ jobs:
           version: ${{ needs.prepare.outputs.version }}
           platform: ${{ matrix.platform }}
           push-by-digest: true
+      
+      - name: Print build metadata
+        run: |
+          echo "Build metadata:"
+          echo "${{ steps.build.outputs.metadata }}"
