@@ -77,8 +77,6 @@ jobs:
 
       - name: Export image digests
         shell: bash
-        env:
-          BUILD_METADATA: ${{ steps.build.outputs.metadata }}
         run: |
           set -euo pipefail
 
@@ -93,7 +91,9 @@ jobs:
               | select(.value["containerimage.digest"] != null)
               | [.key, .value["containerimage.digest"]]
               | @tsv
-            ' <<< "$BUILD_METADATA"
+            ' <<'BUILD_METADATA'
+          ${{ steps.build.outputs.metadata }}
+          BUILD_METADATA
           )
 
       - name: Upload image digests
