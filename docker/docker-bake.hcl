@@ -9,6 +9,10 @@ variable "USE_REGISTRY_CONTEXTS" {
   default = true
 }
 
+variable "PUSH_BY_DIGEST" {
+  default = false
+}
+
 variable "LABELS" {
   default = {
     "org.opencontainers.image.authors"  = "Lapin Matvey"
@@ -29,7 +33,7 @@ variable "PLATFORMS" {
 # Image tags generator
 function "tagged" {
     params = [name]
-    result = compact(concat(
+    result = PUSH_BY_DIGEST ? ["${REGISTRY}${name}"] : compact(concat(
         ["${REGISTRY}${name}:${CLOVER2_DEV_GIT_HASH}"],
 
         # For master build have latest tag

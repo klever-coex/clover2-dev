@@ -63,7 +63,6 @@ runs:
         targets: ${{ inputs.bake-target }}
         push: ${{ inputs.push-by-digest != 'true' }}
         set: |
-          ${{ inputs.push-by-digest == 'true' && format('*.tags=ghcr.io/{0}', github.repository) || '' }}
           *.platform=${{ inputs.platform }}
           *.cache-from=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }}
           *.cache-to=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }},mode=max
@@ -73,3 +72,4 @@ runs:
           CLOVER2_DEV_GIT_HASH=${{ inputs.git-hash }}
           CLOVER2_DEV_VERSION=${{ inputs.version }}
           USE_REGISTRY_CONTEXTS=false
+          PUSH_BY_DIGEST=${{ inputs.push-by-digest }}
