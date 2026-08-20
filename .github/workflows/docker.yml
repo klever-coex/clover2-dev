@@ -159,7 +159,7 @@ jobs:
               exit 1
             fi
 
-            repository="${tags[0]%:*}"
+            repository="ghcr.io/klever-coex/clover2-dev"
             tag_args=()
             for tag in "${tags[@]}"; do
               tag_args+=(--tag "$tag")
