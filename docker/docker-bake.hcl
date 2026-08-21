@@ -34,16 +34,16 @@ variable "PLATFORMS" {
 function "tagged" {
     params = [name]
     result = PUSH_BY_DIGEST ? ["${REGISTRY}"] : compact(concat(
-        ["${REGISTRY}${name}:${CLOVER2_DEV_GIT_HASH}"],
+        ["${REGISTRY}/${name}:${CLOVER2_DEV_GIT_HASH}"],
 
         # For master build have latest tag
-        BUILD_MODE == "master" ? ["${REGISTRY}${name}:latest"] : [],
+        BUILD_MODE == "master" ? ["${REGISTRY}/${name}:latest"] : [],
 
         # For develop build only git hash tag
 
         # Releases have version and stable tags
-        BUILD_MODE == "release" ? ["${REGISTRY}${name}:stable"] : [],
-        BUILD_MODE == "release" ? ["${REGISTRY}${name}:${CLOVER2_DEV_VERSION}"] : [],
+        BUILD_MODE == "release" ? ["${REGISTRY}/${name}:stable"] : [],
+        BUILD_MODE == "release" ? ["${REGISTRY}/${name}:${CLOVER2_DEV_VERSION}"] : [],
     ))
 }
 
