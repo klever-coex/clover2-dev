@@ -110,7 +110,8 @@ if [[ $INSTALL_NUTTX == "true" ]]; then
 
 	echo
 	echo "Installing NuttX dependencies"
-	sudo apt-get update -y --quiet
+
+	# START patch
 	sudo DEBIAN_FRONTEND=noninteractive apt-get -y --quiet --no-install-recommends install \
 		automake \
 		binutils-dev \
@@ -158,6 +159,7 @@ if [[ $INSTALL_NUTTX == "true" ]]; then
 			g++-arm-linux-gnueabihf \
 			;
 	fi
+	# END patch
 
 	if [ -n "$USER" ]; then
 		# add user to dialout group (serial port access)

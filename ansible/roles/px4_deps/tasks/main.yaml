@@ -9,7 +9,7 @@
 
 - name: Copy local PX4 setup script (ubuntu.sh)
   ansible.builtin.copy:
-    src: ubuntu.sh
+    src: "{{ px4_version }}/ubuntu.sh"
     dest: "{{ px4_tmpdir.path }}/ubuntu.sh"
     mode: "0755"
   tags:
