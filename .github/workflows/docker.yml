@@ -17,7 +17,7 @@ permissions:
   packages: write
 
 jobs:
-  prepare:
+  detect-mode:
     runs-on: ubuntu-latest
     outputs:
       build_mode: ${{ steps.detect.outputs.build_mode }}
@@ -44,7 +44,7 @@ jobs:
           echo "git_hash=${HASH:0:7}" >> "$GITHUB_OUTPUT"
 
   build:
-    needs: prepare
+    needs: detect-mode
     strategy:
       fail-fast: false
       matrix:
@@ -69,9 +69,9 @@ jobs:
         with:
           ghcr-token: ${{ secrets.GITHUB_TOKEN }}
           bake-target: default
-          build-mode: ${{ needs.prepare.outputs.build_mode }}
-          git-hash: ${{ needs.prepare.outputs.git_hash }}
-          version: ${{ needs.prepare.outputs.version }}
+          build-mode: ${{ needs.detect-mode.outputs.build_mode }}
+          git-hash: ${{ needs.detect-mode.outputs.git_hash }}
+          version: ${{ needs.detect-mode.outputs.version }}
           platform: ${{ matrix.platform }}
           push-by-digest: true
 
@@ -112,7 +112,7 @@ jobs:
           retention-days: 1
 
   merge:
-    needs: [prepare, build]
+    needs: [detect-mode, build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -132,7 +132,7 @@ jobs:
         with:
           ghcr-token: ${{ secrets.GITHUB_TOKEN }}
           bake-target: default
-          build-mode: ${{ needs.prepare.outputs.build_mode }}
-          git-hash: ${{ needs.prepare.outputs.git_hash }}
-          version: ${{ needs.prepare.outputs.version }}
+          build-mode: ${{ needs.detect-mode.outputs.build_mode }}
+          git-hash: ${{ needs.detect-mode.outputs.git_hash }}
+          version: ${{ needs.detect-mode.outputs.version }}
           digest-path: ${{ runner.temp }}/digests
