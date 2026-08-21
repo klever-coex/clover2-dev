@@ -61,12 +61,10 @@ runs:
         source: .
         files: docker/docker-bake.hcl
         targets: ${{ inputs.bake-target }}
-        push: ${{ inputs.push-by-digest != 'true' }}
         set: |
           *.platform=${{ inputs.platform }}
           *.cache-from=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }}
           *.cache-to=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }},mode=max
-          ${{ inputs.push-by-digest == 'true' && '*.output=type=image,push-by-digest=true,name-canonical=true,push=true' || '' }}
         vars: |
           BUILD_MODE=${{ inputs.build-mode }}
           CLOVER2_DEV_GIT_HASH=${{ inputs.git-hash }}

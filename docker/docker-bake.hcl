@@ -56,6 +56,7 @@ target "_base" {
   context = "."
   labels = LABELS
   platforms = PLATFORMS
+  output = PUSH_BY_DIGEST ? ["type=image,push-by-digest=true,name-canonical=true,push=true"] : ["type=registry"]
 
   args = {
     CLOVER2_DEV_GIT_HASH = "${CLOVER2_DEV_GIT_HASH}"
