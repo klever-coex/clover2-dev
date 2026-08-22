@@ -43,9 +43,17 @@ jobs:
           HASH="${{ github.sha }}"
           echo "git_hash=${HASH:0:7}" >> "$GITHUB_OUTPUT"
 
-  docker:
+  build:
     needs: detect-mode
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: 
+          - runs-on: ubuntu-24.04
+            arch: amd64
+          - runs-on: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: read
       packages: write
@@ -53,11 +61,76 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: ./.github/actions/docker-build
+      - name: Build ${{ matrix.arch }}
+        id: build
+        uses: ./.github/actions/docker-build
         with:
-          ghcr-token: ${{ secrets.GH_PAT }}
+          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
           bake-target: default
-          needs-source: true
           build-mode: ${{ needs.detect-mode.outputs.build_mode }}
           git-hash: ${{ needs.detect-mode.outputs.git_hash }}
           version: ${{ needs.detect-mode.outputs.version }}
+          platform: "linux/${{ matrix.arch }}"
+          push-by-digest: true
+
+      - name: Export image digests
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          digest_dir="$RUNNER_TEMP/digests/${{ matrix.arch }}"
+          mkdir -p "$digest_dir"
+
+          while IFS=$'\t' read -r target repository digest; do
+            printf '%s@%s\n' "$repository" "$digest" > "$digest_dir/$target"
+          done < <(
+            jq -r '
+              to_entries[]
+              | select(
+                  .value["image.name"] != null
+                  and .value["containerimage.digest"] != null
+                )
+              | [
+                  .key,
+                  .value["image.name"],
+                  .value["containerimage.digest"]
+                ]
+              | @tsv
+            ' <<'BUILD_METADATA'
+          ${{ steps.build.outputs.metadata }}
+          BUILD_METADATA
+          )
+
+      - name: Upload image digests
+        uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: [detect-mode, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download image digests
+        uses: actions/download-artifact@v8
+        with:
+          pattern: digests-*
+          path: ${{ runner.temp }}/digests
+          merge-multiple: true
+
+      - uses: ./.github/actions/docker-merge
+        with:
+          ghcr-token: ${{ secrets.GITHUB_TOKEN }}
+          bake-target: default
+          build-mode: ${{ needs.detect-mode.outputs.build_mode }}
+          git-hash: ${{ needs.detect-mode.outputs.git_hash }}
+          version: ${{ needs.detect-mode.outputs.version }}
+          digest-path: ${{ runner.temp }}/digests

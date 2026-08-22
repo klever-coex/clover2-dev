@@ -1,5 +1,5 @@
 name: Docker Setup
-description: Set up QEMU, Docker Buildx, and authenticate to GHCR
+description: Set up Docker Buildx and authenticate to GHCR
 
 inputs:
   ghcr-token:
@@ -9,9 +9,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v4
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
 

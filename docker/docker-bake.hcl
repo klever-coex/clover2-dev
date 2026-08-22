@@ -1,5 +1,5 @@
 variable "BUILD_MODE" { }
-variable "REGISTRY" { default = "ghcr.io/klever-coex/clover2-dev/" }
+variable "REGISTRY" { default = "ghcr.io/klever-coex/clover2-dev" }
 variable "ROS_DISTRO" { default = "jazzy" }
 
 variable "CLOVER2_DEV_GIT_HASH" { }
@@ -7,6 +7,10 @@ variable "CLOVER2_DEV_VERSION" { }
 
 variable "USE_REGISTRY_CONTEXTS" {
   default = true
+}
+
+variable "PUSH_BY_DIGEST" {
+  default = false
 }
 
 variable "LABELS" {
@@ -22,23 +26,24 @@ variable "LABELS" {
 variable "PLATFORMS" {
   default = [
     "linux/amd64",
+    "linux/arm64",
   ]
 }
 
 # Image tags generator
 function "tagged" {
     params = [name]
-    result = compact(concat(
-        ["${REGISTRY}${name}:${CLOVER2_DEV_GIT_HASH}"],
+    result = PUSH_BY_DIGEST ? ["${REGISTRY}/${name}"] : compact(concat(
+        ["${REGISTRY}/${name}:${CLOVER2_DEV_GIT_HASH}"],
 
         # For master build have latest tag
-        BUILD_MODE == "master" ? ["${REGISTRY}${name}:latest"] : [],
+        BUILD_MODE == "master" ? ["${REGISTRY}/${name}:latest"] : [],
 
         # For develop build only git hash tag
 
         # Releases have version and stable tags
-        BUILD_MODE == "release" ? ["${REGISTRY}${name}:stable"] : [],
-        BUILD_MODE == "release" ? ["${REGISTRY}${name}:${CLOVER2_DEV_VERSION}"] : [],
+        BUILD_MODE == "release" ? ["${REGISTRY}/${name}:stable"] : [],
+        BUILD_MODE == "release" ? ["${REGISTRY}/${name}:${CLOVER2_DEV_VERSION}"] : [],
     ))
 }
 
@@ -50,6 +55,8 @@ function "ctx" {
 target "_base" {
   context = "."
   labels = LABELS
+  platforms = PLATFORMS
+  output = PUSH_BY_DIGEST ? ["type=image,push-by-digest=true,name-canonical=true,push=true"] : ["type=registry"]
 
   args = {
     CLOVER2_DEV_GIT_HASH = "${CLOVER2_DEV_GIT_HASH}"
