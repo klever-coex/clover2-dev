@@ -1,0 +1,5 @@
+g2o (0.1.0) noble; urgency=medium
+
+  * Initial metapackage for Clover2 image.
+
+ -- Clover2 <clover2@example.com>  Sat, 12 Jul 2026 00:00:00 +0000

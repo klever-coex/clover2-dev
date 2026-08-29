@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ros2-jazzy-custom
+Upstream-Contact: Clover2 <clover2@example.com>
+
+Files: *
+Copyright: 2026 Clover2
+License: MIT

@@ -1,0 +1,5 @@
+#!/usr/bin/make -f
+# Empty rules — metapackage has no build steps
+
+%:
+	dh $@

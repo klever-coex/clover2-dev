@@ -1,0 +1,16 @@
+Source: g2o
+Section: libs
+Priority: optional
+Maintainer: Clover2 <clover2@example.com>
+Build-Depends: libeigen3-dev, libsuitesparse-dev, libspdlog-dev
+Standards-Version: 4.6.0
+Rules-Requires-Root: no
+
+Package: libg2o-dev
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Graph-based Optimization Framework (development files)
+ g2o is a general framework for optimizing graph-based nonlinear error functions.
+ .
+ This package contains development files.
