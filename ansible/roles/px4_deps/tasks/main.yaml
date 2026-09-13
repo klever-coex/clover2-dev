@@ -16,6 +16,15 @@
     - px4
     - simulation
 
+- name: Copy PX4 Python constraints
+  ansible.builtin.copy:
+    src: "{{ px4_version }}/constraints.txt"
+    dest: "{{ px4_tmpdir.path }}/constraints.txt"
+    mode: "0644"
+  tags:
+    - px4
+    - simulation
+
 - name: Download PX4 Python requirements (needed by ubuntu.sh)
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/PX4/PX4-Autopilot/{{ px4_version }}/Tools/setup/requirements.txt"
