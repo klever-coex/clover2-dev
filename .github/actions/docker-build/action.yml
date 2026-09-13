@@ -25,6 +25,19 @@ inputs:
     description: Version string for release builds
     type: string
     default: ''
+  platform:
+    description: Platform to build
+    type: string
+    required: true
+  push-by-digest:
+    description: Push the image by digest for a later manifest merge
+    type: boolean
+    default: false
+
+outputs:
+  metadata:
+    description: Buildx Bake result metadata
+    value: ${{ steps.build.outputs.metadata }}
 
 runs:
   using: composite
@@ -42,17 +55,19 @@ runs:
         vcs import --shallow src < repos/simulation.yaml
 
     - name: Build and push
+      id: build
       uses: docker/bake-action@v7
       with:
         source: .
         files: docker/docker-bake.hcl
         targets: ${{ inputs.bake-target }}
-        push: true
         set: |
-          *.cache-from=type=gha,scope=clover2-dev
-          *.cache-to=type=gha,scope=clover2-dev,mode=max
+          *.platform=${{ inputs.platform }}
+          *.cache-from=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }}
+          *.cache-to=type=gha,scope=clover2-dev-${{ inputs.bake-target }}-${{ inputs.platform }},mode=max
         vars: |
           BUILD_MODE=${{ inputs.build-mode }}
           CLOVER2_DEV_GIT_HASH=${{ inputs.git-hash }}
           CLOVER2_DEV_VERSION=${{ inputs.version }}
           USE_REGISTRY_CONTEXTS=false
+          PUSH_BY_DIGEST=${{ inputs.push-by-digest }}

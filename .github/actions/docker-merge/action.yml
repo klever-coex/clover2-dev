@@ -1,0 +1,82 @@
+name: Docker Merge
+description: Create multi-platform image manifests from per-platform digests
+
+inputs:
+  ghcr-token:
+    description: Token for GHCR authentication
+    required: true
+  bake-target:
+    description: Bake target or group used to resolve image tags
+    default: default
+  build-mode:
+    description: Build mode (master, develop, release)
+    default: develop
+  git-hash:
+    description: Short git hash for image tagging
+    default: ''
+  version:
+    description: Version string for release builds
+    default: ''
+  digest-path:
+    description: Directory containing per-architecture digest directories
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/docker-setup
+      with:
+        ghcr-token: ${{ inputs.ghcr-token }}
+
+    - name: Create multi-platform manifests
+      shell: bash
+      env:
+        BUILD_MODE: ${{ inputs.build-mode }}
+        CLOVER2_DEV_GIT_HASH: ${{ inputs.git-hash }}
+        CLOVER2_DEV_VERSION: ${{ inputs.version }}
+        DIGEST_PATH: ${{ inputs.digest-path }}
+        BAKE_TARGET: ${{ inputs.bake-target }}
+        PUSH_BY_DIGEST: false
+        USE_REGISTRY_CONTEXTS: false
+      run: |
+        set -euo pipefail
+
+        bake_definition="$(docker buildx bake \
+          --file docker/docker-bake.hcl \
+          --print "$BAKE_TARGET")"
+
+        if ! compgen -G "$DIGEST_PATH/amd64/*" > /dev/null; then
+          echo "No amd64 digests found in $DIGEST_PATH/amd64" >&2
+          exit 1
+        fi
+
+        for amd64_digest_file in "$DIGEST_PATH"/amd64/*; do
+          target="$(basename "$amd64_digest_file")"
+          arm64_digest_file="$DIGEST_PATH/arm64/$target"
+
+          if [[ ! -f "$arm64_digest_file" ]]; then
+            echo "Missing arm64 digest for target $target" >&2
+            exit 1
+          fi
+
+          mapfile -t tags < <(
+            jq -r --arg target "$target" \
+              '.target[$target].tags[]' <<< "$bake_definition"
+          )
+
+          if (( ${#tags[@]} == 0 )); then
+            echo "No tags found for target $target" >&2
+            exit 1
+          fi
+
+          tag_args=()
+          for tag in "${tags[@]}"; do
+            tag_args+=(--tag "$tag")
+          done
+
+          docker buildx imagetools create \
+            "${tag_args[@]}" \
+            "$(<"$amd64_digest_file")" \
+            "$(<"$arm64_digest_file")"
+
+          docker buildx imagetools inspect "${tags[0]}"
+        done
