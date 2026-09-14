@@ -1,0 +1,100 @@
+---
+- name: Validate ROS snapshot platform and date
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.distribution == 'Ubuntu'
+      - ansible_facts['lsb']['codename'] == 'noble'
+      - ros2_snapshot_date is match('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+    fail_msg: ROS snapshots are supported only on Ubuntu Noble with a YYYY-MM-DD snapshot date.
+
+- name: Check ROS snapshot release metadata
+  ansible.builtin.uri:
+    url: "http://snapshots.ros.org/{{ ros_distro }}/{{ ros2_snapshot_date }}/ubuntu/dists/{{ ansible_facts['lsb']['codename'] }}/InRelease"
+    method: GET
+    return_content: false
+    status_code: 200
+
+- name: Find live ROS 2 APT sources
+  become: true
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns:
+      - '*.list'
+      - '*.sources'
+    contains: '^(?!#).*?(packages\.ros\.org/ros2|repo\.ros2\.org)'
+    use_regex: true
+  register: ros2__live_sources
+
+- name: Check main APT source for live ROS 2 repository
+  become: true
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list
+  register: ros2__main_source
+
+- name: Search main APT source for live ROS 2 repository
+  become: true
+  ansible.builtin.command:
+    argv:
+      - grep
+      - -Eq
+      - '(packages\.ros\.org/ros2|repo\.ros2\.org)'
+      - /etc/apt/sources.list
+  register: ros2__main_live_source
+  changed_when: false
+  failed_when: ros2__main_live_source.rc not in [0, 1]
+  when: ros2__main_source.stat.exists
+
+- name: Refuse live ROS 2 repository in main APT source
+  ansible.builtin.assert:
+    that:
+      - not ros2__main_source.stat.exists or ros2__main_live_source.rc == 1
+    fail_msg: Remove the live ROS 2 repository from /etc/apt/sources.list before using a snapshot.
+
+- name: Refuse unmanaged live ROS 2 APT sources
+  ansible.builtin.assert:
+    that:
+      - >-
+        (ros2__live_sources.files | map(attribute='path') | reject('equalto', '/etc/apt/sources.list.d/ros2.sources') | list | length) == 0
+    fail_msg: >-
+      Remove unmanaged live ROS 2 APT sources before using a snapshot: {{
+      ros2__live_sources.files | map(attribute='path') | reject('equalto', '/etc/apt/sources.list.d/ros2.sources') | list | join(', ') }}
+
+- name: Remove live ROS 2 repository configuration package
+  become: true
+  ansible.builtin.apt:
+    name: ros2-apt-source
+    state: absent
+
+- name: Remove live ROS 2 APT source
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/ros2.sources
+    state: absent
+
+- name: Install ROS snapshot signing key
+  become: true
+  ansible.builtin.copy:
+    src: ros-snapshots-archive-keyring.asc
+    dest: "{{ ros2_snapshot_keyring_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure ROS snapshot APT source
+  become: true
+  ansible.builtin.copy:
+    dest: "{{ ros2_snapshot_source_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      Types: deb
+      URIs: http://snapshots.ros.org/{{ ros_distro }}/{{ ros2_snapshot_date }}/ubuntu
+      Suites: {{ ansible_facts['lsb']['codename'] }}
+      Components: main
+      Signed-By: {{ ros2_snapshot_keyring_path }}
+
+- name: Update APT cache for ROS snapshot
+  become: true
+  ansible.builtin.apt:
+    update_cache: true

@@ -1,0 +1,10 @@
+---
+# Select with: -e ros_packages_profile=<name>
+ros_distro: jazzy
+ros_packages_profile: jazzy-2026-06-18
+
+ros_packages_profiles:
+  latest:
+    ros2_snapshot_date: ""
+  jazzy-2026-06-18:
+    ros2_snapshot_date: "2026-06-18"

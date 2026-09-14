@@ -1,8 +1,14 @@
 - name: Install dependencies
   hosts: "{{ target | default('local') }}"
+  vars_files:
+    - vars/ros_packages_profiles.yaml
   vars:
-    ros_distro: "jazzy"
     gz_version: "harmonic"
+
+  pre_tasks:
+    - name: Resolve ROS packages profile
+      ansible.builtin.import_tasks: tasks/resolve_ros_packages_profile.yaml
+      tags: always
 
   roles:
     - role: clover2.dev.ros2

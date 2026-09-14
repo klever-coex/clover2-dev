@@ -2,3 +2,9 @@
 ros_distro: "{{ lookup('env', 'ROS_DISTRO') | default('jazzy', true) }}"
 ros2_installation_type: ros-core
 use_locked_versions: false
+
+# An empty value uses the current ROS 2 APT repository. Set to a snapshot date
+# (YYYY-MM-DD) to install a reproducible ROS package set instead.
+ros2_snapshot_date: ""
+ros2_snapshot_source_path: /etc/apt/sources.list.d/ros2-snapshot.sources
+ros2_snapshot_keyring_path: /usr/share/keyrings/ros-snapshots-archive-keyring.asc

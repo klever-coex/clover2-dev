@@ -1,0 +1,11 @@
+---
+- name: Validate ROS packages profile
+  ansible.builtin.assert:
+    that: ros_packages_profile in ros_packages_profiles
+    fail_msg: >-
+      Unknown ros_packages_profile '{{ ros_packages_profile }}'.
+      Available profiles: {{ ros_packages_profiles.keys() | join(', ') }}
+
+- name: Resolve ROS packages profile
+  ansible.builtin.set_fact:
+    ros2_snapshot_date: "{{ ros_packages_profiles[ros_packages_profile].ros2_snapshot_date }}"
