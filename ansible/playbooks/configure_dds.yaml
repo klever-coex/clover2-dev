@@ -1,0 +1,8 @@
+- name: Configure DDS
+  hosts: "{{ target | default('local') }}"
+  vars:
+    ros_distro: "jazzy"
+
+  roles:
+    - role: clover2.dev.ros2_dds
+      tags: [ros2_dds]
