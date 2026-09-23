@@ -159,10 +159,23 @@ def compose(stores: Sequence[VersionStore] | None, base_path: pathlib.Path,
             "build_mode": build_mode, "version": str(version)}
 
 
+def _dev_version(repo: git.Repo, base: semver.Version, git_hash: str) -> str:
+    try:
+        describe = repo.git.describe("--tags", "--long", "--match", "v*")
+        count = int(describe.rsplit("-", 2)[-2])
+    except (git.GitCommandError, ValueError, IndexError):
+        count = 0
+
+    build = git_hash
+    if repo.is_dirty():
+        build += ".dirty"
+    return f"{base}-dev.{count}+{build}"
+
+
 def _version_for_mode(repo: git.Repo, base: semver.Version,
                       mode: str, git_hash: str) -> str:
     if mode in ("develop", "master"):
-        return f"{base}+{git_hash}"
+        return _dev_version(repo, base, git_hash)
 
     try:
         tag = repo.git.describe("--tags", "--exact-match", "HEAD")
