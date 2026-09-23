@@ -1,0 +1,8 @@
+[project]
+name = "clover2-dev"
+
+[plugins.version]
+reference = "pyproject::clover2-dev"
+
+[plugins.hello]
+greeting = "Hello"
