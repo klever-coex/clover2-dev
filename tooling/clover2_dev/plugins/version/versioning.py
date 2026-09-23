@@ -143,9 +143,9 @@ def compose(stores: Sequence[VersionStore] | None, base_path: pathlib.Path,
     else:
         try:
             commit = repo.commit(ref if ref else "HEAD")
-        except git.BadName as exc:
-            raise ToolingError(
-                f"Unknown git ref '{ref}'; use a branch, tag or HEAD") from exc
+        except git.BadName:
+            logger.warning("Ref '%s' not found; using HEAD", ref)
+            commit = repo.commit("HEAD")
 
         git_hash = commit.hexsha[:7]
         build_mode = mode
