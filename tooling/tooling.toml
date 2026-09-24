@@ -1,0 +1,9 @@
+[project]
+name = "clover2-dev"
+
+[plugins.version]
+reference = "pyproject::clover2-dev"
+exclude = ["src"]
+
+[plugins.hello]
+greeting = "Hello"

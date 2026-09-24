@@ -27,3 +27,16 @@ colcon build --symlink-install --cmake-args  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 source ./install/setup.bash
 ros2 launch clover2_sim gz_simple.launch.py
 ```
+
+## Developer CLI (`clover2-dev`)
+
+```bash
+uv tool install -e ./tooling
+```
+
+Then from any project with a `tooling/tooling.toml` (this one included):
+
+```bash
+clover2-dev plugins list
+clover2-dev version show
+```

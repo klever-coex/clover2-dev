@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-model href="https://raw.githubusercontent.com/eProsima/Fast-DDS/refs/tags/v2.14.6/resources/xsd/fastRTPS_profiles.xsd"?>
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+
+    <participant profile_name="default_participant_profile" is_default_profile="true">
+        <rtps>
+            <name>Default Participant Profile</name>
+
+            <useBuiltinTransports>true</useBuiltinTransports>
+        </rtps>
+    </participant>
+
+</profiles>

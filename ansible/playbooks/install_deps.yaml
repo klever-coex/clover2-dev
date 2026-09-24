@@ -11,9 +11,6 @@
     - role: clover2.dev.px4_deps
       tags: [simulation]
 
-    - role: clover2.dev.geographiclib
-      tags: [core, simulation, geographiclib]
-
     - role: clover2.dev.ros2_extra
       tags: [core, simulation]
 
