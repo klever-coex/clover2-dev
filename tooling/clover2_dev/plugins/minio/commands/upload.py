@@ -40,10 +40,9 @@ def make_command(plugin_config) -> click.Command:
                                _parse_tags(tags_))
 
         emit({
-            "endpoint": endpoint_value,
             "bucket": bucket_value,
             "key": key_value,
-            "url": f"{endpoint_value}/{bucket_value}/{key_value}",
+            "path": f"{bucket_value}/{key_value}",
         }, as_json, field)
 
     return upload_cmd

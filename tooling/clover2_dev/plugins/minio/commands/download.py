@@ -33,7 +33,6 @@ def make_command(plugin_config) -> click.Command:
         client.download_artifact(minio_client, bucket_value, key, output_path)
 
         emit({
-            "endpoint": endpoint_value,
             "bucket": bucket_value,
             "key": key,
             "path": str(output_path),
