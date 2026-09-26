@@ -2,7 +2,7 @@ name: Tooling lint
 
 on:
   push:
-    branches: [master, feature/tooling]
+    branches: [master]
   pull_request:
   workflow_dispatch:
 
