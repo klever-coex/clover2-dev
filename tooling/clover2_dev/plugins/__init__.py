@@ -4,9 +4,9 @@ import logging
 import pathlib
 import sys
 import types
-from collections.abc import Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 import click
 
@@ -54,8 +54,11 @@ def load_module_from_path(path: pathlib.Path) -> Any:
         return cached
 
     module_name = f"clover2_dev_plugin_{len(_MODULE_CACHE)}_{path.stem}"
-    kwargs = {"submodule_search_locations": [str(canonical.parent)]} \
-        if path.stem == "__init__" else {}
+    kwargs = (
+        {"submodule_search_locations": [str(canonical.parent)]}
+        if path.stem == "__init__"
+        else {}
+    )
     spec = importlib.util.spec_from_file_location(module_name, canonical, **kwargs)
     if spec is None or spec.loader is None:
         raise ToolingError(f"Cannot import plugin module {canonical}")
@@ -86,8 +89,8 @@ def _extract_plugin(module: Any, source: str) -> Plugin:
     candidate = getattr(module, "plugin", None)
     if candidate is None:
         raise ToolingError(
-            f"Plugin module {source} does not expose a module-level "
-            "'plugin' attribute")
+            f"Plugin module {source} does not expose a module-level 'plugin' attribute"
+        )
 
     return _coerce_plugin(candidate, source)
 
@@ -100,7 +103,8 @@ def _coerce_plugin(value: Any, source: str) -> Plugin:
     if not isinstance(plugin, Plugin):
         raise ToolingError(
             f"Plugin from {source} does not satisfy the Plugin protocol "
-            "(needs 'name' and 'create_commands(PluginContext)')")
+            "(needs 'name' and 'create_commands(PluginContext)')"
+        )
 
     return plugin
 
@@ -108,7 +112,8 @@ def _coerce_plugin(value: Any, source: str) -> Plugin:
 def _load_installed_plugins(app: App) -> list[PluginRecord]:
     entries = sorted(
         importlib.metadata.entry_points(group=ENTRY_POINT_GROUP),
-        key=lambda entry: entry.name)
+        key=lambda entry: entry.name,
+    )
 
     records = []
     for entry in entries:
@@ -121,16 +126,18 @@ def _load_installed_plugins(app: App) -> list[PluginRecord]:
             raise
         except Exception as exc:
             raise ToolingError(
-                f"Failed to load installed plugin '{entry.name}' "
-                f"({source}): {exc}") from exc
+                f"Failed to load installed plugin '{entry.name}' ({source}): {exc}"
+            ) from exc
 
         enabled = app.config.plugin_enabled(plugin.name)
-        records.append(PluginRecord(
-            name=plugin.name,
-            source=source,
-            enabled=enabled,
-            plugin=plugin if enabled else None,
-        ))
+        records.append(
+            PluginRecord(
+                name=plugin.name,
+                source=source,
+                enabled=enabled,
+                plugin=plugin if enabled else None,
+            )
+        )
 
     return records
 
@@ -149,22 +156,28 @@ def _load_local_plugins(app: App) -> list[PluginRecord]:
         if module_path is None:
             continue
 
-        plugin_id = module_path.parent.name if module_path.stem == "__init__" \
+        plugin_id = (
+            module_path.parent.name
+            if module_path.stem == "__init__"
             else module_path.stem
+        )
         enabled = app.config.plugin_enabled(plugin_id)
         if not enabled:
-            records.append(PluginRecord(name=plugin_id, source=str(module_path),
-                                        enabled=False))
+            records.append(
+                PluginRecord(name=plugin_id, source=str(module_path), enabled=False)
+            )
             continue
 
         plugin = _extract_plugin(load_module_from_path(module_path), str(module_path))
         if plugin.name != plugin_id:
             raise ToolingError(
                 f"Plugin {module_path} declares name '{plugin.name}' but its "
-                f"id is '{plugin_id}'; keep the file name and plugin.name in sync")
+                f"id is '{plugin_id}'; keep the file name and plugin.name in sync"
+            )
 
-        records.append(PluginRecord(name=plugin_id, source=str(module_path),
-                                    plugin=plugin))
+        records.append(
+            PluginRecord(name=plugin_id, source=str(module_path), plugin=plugin)
+        )
 
     return records
 
@@ -180,10 +193,14 @@ def load_plugins(app: App) -> list[PluginRecord]:
                 raise ToolingError(
                     f"Duplicate plugin id '{record.name}' "
                     f"({other.source} and {record.source}); "
-                    "disable one of them via [plugins.<id>] enabled = false")
-            logger.warning("Duplicate plugin id '%s' (%s, %s); "
-                           "one of them is disabled",
-                           record.name, other.source, record.source)
+                    "disable one of them via [plugins.<id>] enabled = false"
+                )
+            logger.warning(
+                "Duplicate plugin id '%s' (%s, %s); one of them is disabled",
+                record.name,
+                other.source,
+                record.source,
+            )
             continue
         seen_ids[record.name] = record
 
@@ -205,18 +222,26 @@ def load_plugins(app: App) -> list[PluginRecord]:
         except Exception as exc:
             raise ToolingError(
                 f"Plugin '{record.name}' ({record.source}) "
-                f"failed to create commands: {exc}") from exc
+                f"failed to create commands: {exc}"
+            ) from exc
 
         for command in commands:
             owner = command_owners.get(command.name)
             if owner is not None:
                 raise ToolingError(
                     f"Command name collision: {owner} and plugin "
-                    f"'{record.name}' both provide '{command.name}'")
+                    f"'{record.name}' both provide '{command.name}'"
+                )
             command_owners[command.name] = record.name
 
-        built_records.append(PluginRecord(
-            name=record.name, source=record.source, enabled=record.enabled,
-            plugin=record.plugin, commands=tuple(commands)))
+        built_records.append(
+            PluginRecord(
+                name=record.name,
+                source=record.source,
+                enabled=record.enabled,
+                plugin=record.plugin,
+                commands=tuple(commands),
+            )
+        )
 
     return built_records

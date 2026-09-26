@@ -9,11 +9,9 @@ from clover2_dev.errors import ToolingError
 
 def output_options(func: Callable) -> Callable:
     func = click.option(
-        "--json", "as_json", is_flag=True,
-        help="Emit machine-readable JSON")(func)
-    func = click.option(
-        "--field",
-        help="Print a single payload field")(func)
+        "--json", "as_json", is_flag=True, help="Emit machine-readable JSON"
+    )(func)
+    func = click.option("--field", help="Print a single payload field")(func)
     return func
 
 
@@ -28,7 +26,8 @@ def emit(payload: dict[str, Any], as_json: bool, field: str | None) -> None:
     if field:
         if field not in payload:
             raise ToolingError(
-                f"Unknown field '{field}'; available: {', '.join(payload)}")
+                f"Unknown field '{field}'; available: {', '.join(payload)}"
+            )
         click.echo(payload[field])
         return
 

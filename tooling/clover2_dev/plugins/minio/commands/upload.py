@@ -19,30 +19,48 @@ def _parse_tags(raw: tuple[str, ...]) -> dict[str, str]:
 
 def make_command(plugin_config) -> click.Command:
     @click.command(name="upload", help="Upload a file to a MinIO bucket")
-    @click.argument("path", type=click.Path(
-        exists=True, dir_okay=False, path_type=pathlib.Path))
+    @click.argument(
+        "path", type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path)
+    )
     @click.option("--key", help="Object key (default: file name)")
-    @click.option("--tag", "tags_", multiple=True, metavar="KEY=VALUE",
-                  help="Object tag (repeatable)")
+    @click.option(
+        "--tag",
+        "tags_",
+        multiple=True,
+        metavar="KEY=VALUE",
+        help="Object tag (repeatable)",
+    )
     @client.minio_options
     @output_options
-    def upload_cmd(path: pathlib.Path, key: str | None, bucket: str | None,
-                   endpoint: str | None, insecure: bool,
-                   tags_: tuple[str, ...], as_json: bool,
-                   field: str | None) -> None:
+    def upload_cmd(
+        path: pathlib.Path,
+        key: str | None,
+        bucket: str | None,
+        endpoint: str | None,
+        insecure: bool,
+        tags_: tuple[str, ...],
+        as_json: bool,
+        field: str | None,
+    ) -> None:
         minio_client, endpoint_value = client.build_client(
-            plugin_config, endpoint, insecure)
+            plugin_config, endpoint, insecure
+        )
 
         bucket_value = client.resolve_bucket(plugin_config, bucket)
         key_value = key or path.name
 
-        client.upload_artifact(minio_client, bucket_value, key_value, path,
-                               _parse_tags(tags_))
+        client.upload_artifact(
+            minio_client, bucket_value, key_value, path, _parse_tags(tags_)
+        )
 
-        emit({
-            "bucket": bucket_value,
-            "key": key_value,
-            "path": f"{bucket_value}/{key_value}",
-        }, as_json, field)
+        emit(
+            {
+                "bucket": bucket_value,
+                "key": key_value,
+                "path": f"{bucket_value}/{key_value}",
+            },
+            as_json,
+            field,
+        )
 
     return upload_cmd

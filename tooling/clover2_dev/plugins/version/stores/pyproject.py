@@ -12,7 +12,6 @@ POETRY_SECTION = "tool.poetry"
 
 
 class PyProjectStore(VersionStore):
-
     FILENAME = "pyproject.toml"
     STORE_NAME: str = "pyproject"
 
@@ -21,8 +20,7 @@ class PyProjectStore(VersionStore):
         try:
             self._doc = tomlkit.parse(path.read_text())
         except TOMLKitError as exc:
-            raise StoreReadError(
-                f"Invalid TOML in {self.path}: {exc}") from exc
+            raise StoreReadError(f"Invalid TOML in {self.path}: {exc}") from exc
 
     @property
     def _version_container(self):
@@ -47,8 +45,7 @@ class PyProjectStore(VersionStore):
         try:
             return semver.Version.parse(raw)
         except ValueError as exc:
-            raise StoreReadError(
-                f"Invalid version in {self.path}: {raw}") from exc
+            raise StoreReadError(f"Invalid version in {self.path}: {raw}") from exc
 
     def write(self, version: semver.Version) -> None:
         container = self._version_container

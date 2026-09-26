@@ -20,8 +20,10 @@ def is_project(directory: pathlib.Path) -> bool:
 
 
 def resolve_root(explicit: pathlib.Path | None = None) -> pathlib.Path | None:
-    for source, value in (("--root", explicit),
-                          ("env " + ROOT_ENV, os.environ.get(ROOT_ENV))):
+    for source, value in (
+        ("--root", explicit),
+        ("env " + ROOT_ENV, os.environ.get(ROOT_ENV)),
+    ):
         if value is None:
             continue
 
@@ -29,7 +31,8 @@ def resolve_root(explicit: pathlib.Path | None = None) -> pathlib.Path | None:
         if not is_project(candidate):
             raise ToolingError(
                 f"{source} points to '{candidate}' which has no "
-                f"{CONFIG_DIR}/{CONFIG_FILE}")
+                f"{CONFIG_DIR}/{CONFIG_FILE}"
+            )
 
         return candidate
 

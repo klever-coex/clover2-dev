@@ -7,13 +7,12 @@ from clover2_dev.errors import StoreReadError
 from clover2_dev.plugins.version.stores.base import VersionStore, bare, no_version
 
 VERSION_RE = re.compile(
-    r'^(version\s*:\s*)(["\']?)([^\s"\'#]+)\2(\s*(?:#.*)?)$', re.MULTILINE)
-NAME_RE = re.compile(
-    r'^name\s*:\s*(["\']?)([^\s"\'#]+)\1(\s*(?:#.*)?)$', re.MULTILINE)
+    r'^(version\s*:\s*)(["\']?)([^\s"\'#]+)\2(\s*(?:#.*)?)$', re.MULTILINE
+)
+NAME_RE = re.compile(r'^name\s*:\s*(["\']?)([^\s"\'#]+)\1(\s*(?:#.*)?)$', re.MULTILINE)
 
 
 class GalaxyStore(VersionStore):
-
     FILENAME = "galaxy.yml"
     STORE_NAME: str = "galaxy"
 
@@ -34,12 +33,18 @@ class GalaxyStore(VersionStore):
             return semver.Version.parse(match.group(3))
         except ValueError as exc:
             raise StoreReadError(
-                f"Invalid version in {self.path}: {match.group(3)}") from exc
+                f"Invalid version in {self.path}: {match.group(3)}"
+            ) from exc
 
     def write(self, version: semver.Version) -> None:
         def replace(match: re.Match) -> str:
-            return (match.group(1) + match.group(2)
-                    + str(bare(version)) + match.group(2) + match.group(4))
+            return (
+                match.group(1)
+                + match.group(2)
+                + str(bare(version))
+                + match.group(2)
+                + match.group(4)
+            )
 
         new_text, count = VERSION_RE.subn(replace, self._text, count=1)
         if count != 1:

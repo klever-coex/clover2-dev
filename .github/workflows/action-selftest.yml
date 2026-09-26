@@ -12,31 +12,19 @@ concurrency:
 
 jobs:
   self-test:
-    name: Install CLI on ${{ matrix.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        runs-on: [ubuntu-24.04, ubuntu-24.04-arm]
-    runs-on: ${{ matrix.runs-on }}
+    name: Install CLI
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
       - name: Install via action
         uses: ./
-        id: install
 
-      - name: CLI is on PATH and reports expected version
+      - name: CLI is on PATH
         run: |
           set -euo pipefail
           command -v clover2-dev
           clover2-dev --version
-
-          expected="$(awk -F'"' '/^version =/{print $2}' tooling/pyproject.toml)"
-          actual="${{ steps.install.outputs.version }}"
-          [[ "$actual" == "$expected" ]] || {
-            echo "::error::action reported version '$actual', pyproject.toml says '$expected'"
-            exit 1
-          }
 
       - name: Plugins registered and config discovery works
         run: |

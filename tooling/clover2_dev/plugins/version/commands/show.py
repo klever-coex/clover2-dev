@@ -5,8 +5,7 @@ from clover2_dev.plugins.version.stores import discover_stores, reference_store
 
 
 @click.command(name="show", help="Show stores versions")
-@click.option("--main-only", is_flag=True,
-              help="Show only reference package version")
+@click.option("--main-only", is_flag=True, help="Show only reference package version")
 @click.pass_obj
 def command(session: VersionSession, main_only: bool) -> None:
     stores = discover_stores(session.dir, session.filter, session.exclude)

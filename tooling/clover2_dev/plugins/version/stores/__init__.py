@@ -1,4 +1,9 @@
-from . import galaxy, npm_package, pyproject, ros_package  # noqa: F401  (side-effect registration)
+from . import (  # noqa: F401  (side-effect registration)
+    galaxy,
+    npm_package,
+    pyproject,
+    ros_package,
+)
 from .base import (
     REFERENCE_SEP,
     STORES,

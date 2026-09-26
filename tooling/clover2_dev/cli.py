@@ -55,7 +55,7 @@ def _prescan() -> argparse.Namespace:
         if token == "--":
             break
         if token == "--root":
-            pre.extend(tokens[i:i + 2])
+            pre.extend(tokens[i : i + 2])
             i += 2
             continue
         if not token.startswith("-"):
@@ -68,14 +68,15 @@ def _prescan() -> argparse.Namespace:
 
 
 def build_cli(app: App) -> click.Group:
-    @click.group(name="clover2-dev", cls=ToolingGroup,
-                 context_settings={"obj": app})
+    @click.group(name="clover2-dev", cls=ToolingGroup, context_settings={"obj": app})
     @click.version_option(clover2_dev.__version__, prog_name="clover2-dev")
-    @click.option("-v", "--verbose", count=True,
-                  help="Increase output verbosity")
-    @click.option("--root", type=click.Path(file_okay=False, path_type=pathlib.Path),
-                  help="Project root override (default: the launch directory, "
-                       "which must contain tooling/tooling.toml)")
+    @click.option("-v", "--verbose", count=True, help="Increase output verbosity")
+    @click.option(
+        "--root",
+        type=click.Path(file_okay=False, path_type=pathlib.Path),
+        help="Project root override (default: the launch directory, "
+        "which must contain tooling/tooling.toml)",
+    )
     def cli(verbose: int, root: pathlib.Path | None) -> None:
         pass
 
@@ -99,8 +100,11 @@ def main() -> None:
     try:
         root = resolve_root(opts.root)
         if root is None:
-            click.echo("warning: no tooling/tooling.toml found; "
-                       "only installed plugins are available", err=True)
+            click.echo(
+                "warning: no tooling/tooling.toml found; "
+                "only installed plugins are available",
+                err=True,
+            )
             config = ToolingConfig.empty()
         else:
             config = ToolingConfig.load(config_path(root))

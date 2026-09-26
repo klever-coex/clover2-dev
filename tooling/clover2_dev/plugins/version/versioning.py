@@ -61,8 +61,7 @@ def _latest_tag(repo: git.Repo, kind: str) -> dict:
         tags = [n for n in _tag_names(repo) if n.startswith("v") and "-rc." in n]
         what = "rc"
     else:
-        tags = [n for n in _tag_names(repo)
-                if n.startswith("v") and "-" not in n]
+        tags = [n for n in _tag_names(repo) if n.startswith("v") and "-" not in n]
         what = "stable"
 
     tag = _max_tag(tags)
@@ -70,27 +69,31 @@ def _latest_tag(repo: git.Repo, kind: str) -> dict:
         raise ToolingError(f"No {what} tags found")
 
     version = parse_tag(tag)
-    return {"tag": tag,
-            "version": str(version.finalize_version() if what == "rc" else version),
-            "commit": repo.commit(tag).hexsha}
+    return {
+        "tag": tag,
+        "version": str(version.finalize_version() if what == "rc" else version),
+        "commit": repo.commit(tag).hexsha,
+    }
 
 
-def bump(stores: Sequence[VersionStore], field: str,
-         reference: str) -> dict:
+def bump(stores: Sequence[VersionStore], field: str, reference: str) -> dict:
     current = reference_store(stores, reference).read()
     target = getattr(current, f"bump_{field}")()
     write_all(stores, target)
     return _payload(str(bare(target)), f"v{bare(target)}", True)
 
 
-def bump_rc(stores: Sequence[VersionStore], base_path: pathlib.Path,
-            base_field: str, reference: str) -> dict:
+def bump_rc(
+    stores: Sequence[VersionStore],
+    base_path: pathlib.Path,
+    base_field: str,
+    reference: str,
+) -> dict:
     current = reference_store(stores, reference).read()
 
     repo = _open_repo(base_path)
     if repo is None:
-        logger.warning(
-            "Not a git repo; treating '%s' as a fresh rc base", current)
+        logger.warning("Not a git repo; treating '%s' as a fresh rc base", current)
         rc_names, stable_exists = [], False
     else:
         names = _tag_names(repo)
@@ -109,9 +112,15 @@ def bump_rc(stores: Sequence[VersionStore], base_path: pathlib.Path,
     return _payload(str(current), f"v{current}-rc.1", False)
 
 
-def compose(stores: Sequence[VersionStore] | None, base_path: pathlib.Path,
-            reference: str, ref: str | None = None, mode: str | None = None,
-            latest_rc: bool = False, latest_stable: bool = False) -> dict:
+def compose(
+    stores: Sequence[VersionStore] | None,
+    base_path: pathlib.Path,
+    reference: str,
+    ref: str | None = None,
+    mode: str | None = None,
+    latest_rc: bool = False,
+    latest_stable: bool = False,
+) -> dict:
     repo = _open_repo(base_path)
     if repo is None:
         raise ToolingError(f"'{base_path}' is not a git repository")
@@ -125,13 +134,12 @@ def compose(stores: Sequence[VersionStore] | None, base_path: pathlib.Path,
     base = reference_store(stores or [], reference).read()
     if ref and not ref.startswith("refs/"):
         if not ref.startswith("v"):
-            raise ToolingError(
-                "--ref must be a full git ref or a v-prefixed tag")
+            raise ToolingError("--ref must be a full git ref or a v-prefixed tag")
 
         ref = f"refs/tags/{ref}"
 
     if ref and ref.startswith("refs/tags/"):
-        tag_name = ref[len("refs/tags/"):]
+        tag_name = ref[len("refs/tags/") :]
         version = parse_tag(tag_name)
         tag = next((t for t in repo.tags if t.name == tag_name), None)
 
@@ -155,8 +163,12 @@ def compose(stores: Sequence[VersionStore] | None, base_path: pathlib.Path,
 
         version = _version_for_mode(repo, base, build_mode, git_hash)
 
-    return {"base_version": str(base), "git_hash": git_hash,
-            "build_mode": build_mode, "version": str(version)}
+    return {
+        "base_version": str(base),
+        "git_hash": git_hash,
+        "build_mode": build_mode,
+        "version": str(version),
+    }
 
 
 def _dev_version(repo: git.Repo, base: semver.Version, git_hash: str) -> str:
@@ -172,8 +184,9 @@ def _dev_version(repo: git.Repo, base: semver.Version, git_hash: str) -> str:
     return f"{base}-dev.{count}+{build}"
 
 
-def _version_for_mode(repo: git.Repo, base: semver.Version,
-                      mode: str, git_hash: str) -> str:
+def _version_for_mode(
+    repo: git.Repo, base: semver.Version, mode: str, git_hash: str
+) -> str:
     if mode in ("develop", "master"):
         return _dev_version(repo, base, git_hash)
 
@@ -187,9 +200,9 @@ def _version_for_mode(repo: git.Repo, base: semver.Version,
         if (mode == "release") == (version.prerelease is None):
             return str(version)
         logger.warning(
-            "Tag '%s' does not match %s mode; using bare base version", tag, mode)
+            "Tag '%s' does not match %s mode; using bare base version", tag, mode
+        )
     else:
-        logger.warning(
-            "No tag on HEAD; %s build uses the bare base version", mode)
+        logger.warning("No tag on HEAD; %s build uses the bare base version", mode)
 
     return str(base)

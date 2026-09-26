@@ -23,8 +23,7 @@ class RosPackageStore(VersionStore):
         self._name = root.findtext("name")
         self._version_el = root.find("version")
         if not self._name or self._version_el is None:
-            raise StoreReadError(
-                f"Missing <name> or <version> in {self.path}")
+            raise StoreReadError(f"Missing <name> or <version> in {self.path}")
 
     @property
     def name(self) -> str:
@@ -35,9 +34,11 @@ class RosPackageStore(VersionStore):
             return semver.Version.parse(self._version_el.text)
         except ValueError as exc:
             raise StoreReadError(
-                f"Invalid version in {self.path}: {self._version_el.text}") from exc
+                f"Invalid version in {self.path}: {self._version_el.text}"
+            ) from exc
 
     def write(self, version: semver.Version) -> None:
         self._version_el.text = str(bare(version))
-        self._tree.write(self.path, encoding="utf-8",
-                         xml_declaration=True, pretty_print=True)
+        self._tree.write(
+            self.path, encoding="utf-8", xml_declaration=True, pretty_print=True
+        )

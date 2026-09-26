@@ -19,8 +19,7 @@ class NpmPackageStore(VersionStore):
         try:
             self._data = json.loads(self.path.read_text())
         except json.JSONDecodeError as exc:
-            raise StoreReadError(
-                f"Invalid JSON in {self.path}: {exc}") from exc
+            raise StoreReadError(f"Invalid JSON in {self.path}: {exc}") from exc
         self._name = self._data.get("name", self.path.parent.name)
 
     @property
@@ -34,13 +33,11 @@ class NpmPackageStore(VersionStore):
         try:
             return semver.Version.parse(raw)
         except ValueError as exc:
-            raise StoreReadError(
-                f"Invalid version in {self.path}: {raw}") from exc
+            raise StoreReadError(f"Invalid version in {self.path}: {raw}") from exc
 
     def write(self, version: semver.Version) -> None:
         text = self.path.read_text()
-        new_text, count = VERSION_RE.subn(
-            rf"\g<1>{bare(version)}\g<3>", text, count=1)
+        new_text, count = VERSION_RE.subn(rf"\g<1>{bare(version)}\g<3>", text, count=1)
 
         if count != 1:
             raise no_version(self.path)

@@ -19,8 +19,9 @@ class MinioPlugin:
     def create_commands(self, ctx: PluginContext) -> list[click.Command]:
         from clover2_dev.plugins.minio import commands
 
-        @click.group(name="minio",
-                     help="Upload/download artifacts via MinIO (S3-compatible)")
+        @click.group(
+            name="minio", help="Upload/download artifacts via MinIO (S3-compatible)"
+        )
         def group() -> None:
             pass
 

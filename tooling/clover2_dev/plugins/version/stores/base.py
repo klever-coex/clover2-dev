@@ -14,17 +14,16 @@ logger = logging.getLogger(__name__)
 
 STORES: dict[str, type["VersionStore"]] = {}
 
-SKIP_DIRS = {"node_modules", ".git", "build",
-             "dist", ".venv", "venv", "install"}
+SKIP_DIRS = {"node_modules", ".git", "build", "dist", ".venv", "venv", "install"}
 
 REFERENCE_SEP = "::"
 
 
 def _excluded(rel_dir: pathlib.Path, exclude: Sequence[str]) -> bool:
     rel_posix = rel_dir.as_posix()
-    return (any(fnmatch.fnmatch(rel_posix, glob) for glob in exclude)
-            or any(fnmatch.fnmatch(part, glob)
-                   for glob in exclude for part in rel_posix.split("/")))
+    return any(fnmatch.fnmatch(rel_posix, glob) for glob in exclude) or any(
+        fnmatch.fnmatch(part, glob) for glob in exclude for part in rel_posix.split("/")
+    )
 
 
 class VersionStore(abc.ABC):
@@ -74,7 +73,8 @@ def no_version(path: pathlib.Path) -> StoreReadError:
 def bare(version: semver.Version) -> semver.Version:
     if version.prerelease is not None or version.build is not None:
         logger.warning(
-            "Version %s carries a suffix; stores keep bare versions only", version)
+            "Version %s carries a suffix; stores keep bare versions only", version
+        )
 
     return version.finalize_version()
 
@@ -84,16 +84,19 @@ def create_store(path: pathlib.Path) -> VersionStore | None:
     return store_cls(path) if store_cls else None
 
 
-def discover_stores(base_path: pathlib.Path, name_filter: re.Pattern,
-                    exclude: Sequence[str] = ()) -> list[VersionStore]:
+def discover_stores(
+    base_path: pathlib.Path, name_filter: re.Pattern, exclude: Sequence[str] = ()
+) -> list[VersionStore]:
     stores = []
     base = pathlib.Path(base_path)
 
     for root, dirs, files in os.walk(base):
-        dirs[:] = [d for d in dirs
-                   if d not in SKIP_DIRS
-                   and not _excluded(pathlib.Path(root, d).relative_to(base),
-                                     exclude)]
+        dirs[:] = [
+            d
+            for d in dirs
+            if d not in SKIP_DIRS
+            and not _excluded(pathlib.Path(root, d).relative_to(base), exclude)
+        ]
         for file in files:
             try:
                 store = create_store(pathlib.Path(root) / file)
@@ -104,8 +107,9 @@ def discover_stores(base_path: pathlib.Path, name_filter: re.Pattern,
                 logger.debug("Skipping %s: %s", file, exc)
                 continue
 
-            logger.debug("Found store: %s of %s (%s)",
-                         store.name, store.store_name, version)
+            logger.debug(
+                "Found store: %s of %s (%s)", store.name, store.store_name, version
+            )
             stores.append(store)
 
     return stores
@@ -115,16 +119,15 @@ def reference_store(stores: Sequence[VersionStore], reference: str) -> VersionSt
     store_type, sep, name = reference.partition(REFERENCE_SEP)
     if not sep or not store_type or not name:
         raise ToolingError(
-            f"Reference '{reference}' must be '<store-type>::<name>', "
-            "e.g. ros::clover2")
+            f"Reference '{reference}' must be '<store-type>::<name>', e.g. ros::clover2"
+        )
 
     for store in stores:
         if store.store_name == store_type and store.name == name:
             return store
 
     available = ", ".join(s.reference for s in stores) or "none"
-    raise ToolingError(
-        f"Reference store '{reference}' not found; available: {available}")
+    raise ToolingError(f"Reference store '{reference}' not found; available: {available}")
 
 
 def write_all(stores: Sequence[VersionStore], version: semver.Version) -> None:

@@ -1,8 +1,9 @@
 import logging
 import pathlib
 import tomllib
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from clover2_dev.errors import ToolingError
 
@@ -13,7 +14,6 @@ KNOWN_TOP_LEVEL_KEYS = {"project", "plugins"}
 
 @dataclass(frozen=True)
 class ToolingConfig:
-
     path: pathlib.Path | None
     project_name: str
     data: Mapping[str, Any]
@@ -33,8 +33,7 @@ class ToolingConfig:
 
         for key in data:
             if key not in KNOWN_TOP_LEVEL_KEYS:
-                logger.warning(
-                    "%s: unknown top-level key '%s' ignored", path, key)
+                logger.warning("%s: unknown top-level key '%s' ignored", path, key)
 
         project = _table(data, "project", path)
         if not isinstance(project.get("name", ""), str):
@@ -43,8 +42,7 @@ class ToolingConfig:
         plugins = _table(data, "plugins", path)
         for plugin_id, section in plugins.items():
             if not isinstance(section, dict):
-                raise ToolingError(
-                    f"{path}: [plugins.{plugin_id}] must be a table")
+                raise ToolingError(f"{path}: [plugins.{plugin_id}] must be a table")
 
             _check_enabled(path, plugin_id, section)
 
@@ -71,13 +69,13 @@ def _table(data: Mapping[str, Any], key: str, path: pathlib.Path) -> dict[str, A
     return value
 
 
-def _check_enabled(path: pathlib.Path | None, plugin_id: str,
-                   section: Mapping[str, Any]) -> bool:
+def _check_enabled(
+    path: pathlib.Path | None, plugin_id: str, section: Mapping[str, Any]
+) -> bool:
     enabled = section.get("enabled", True)
 
     if not isinstance(enabled, bool):
         where = f"{path}: " if path else ""
-        raise ToolingError(
-            f"{where}[plugins.{plugin_id}] enabled must be a boolean")
+        raise ToolingError(f"{where}[plugins.{plugin_id}] enabled must be a boolean")
 
     return enabled

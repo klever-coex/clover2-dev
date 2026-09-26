@@ -20,7 +20,7 @@ dependencies = [
 clover2-dev = "clover2_dev.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8.0"]
+dev = ["ruff==0.16.9"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["clover2_dev"]
