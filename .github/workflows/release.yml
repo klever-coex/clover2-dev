@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: '"pre-release" cuts/advances an rc series; "stable" releases a bumped version'
+        required: true
+        type: choice
+        options: [stable, pre-release]
+        default: stable
+      bump:
+        description: 'Version bump (base bump for a fresh rc cut)'
+        required: true
+        type: choice
+        options: [major, minor, patch]
+        default: patch
+      promote_from:
+        description: 'Promote this validated rc tag (e.g. v0.1.1-rc.1) to a stable release instead of bumping'
+        type: string
+        default: ''
+      dry_run:
+        description: 'Dry run (no push, no tag)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: release
+
+jobs:
+  prepare-release:
+    if: github.ref == 'refs/heads/master' || inputs.dry_run
+    environment: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+      - uses: ./
+
+      - name: Prepare version
+        id: prepare
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          BUMP: ${{ inputs.bump }}
+          PROMOTE_FROM: ${{ inputs.promote_from }}
+        run: |
+          VM="clover2-dev version -d ."
+
+          if [[ "$CHANNEL" == "pre-release" ]]; then
+            BUMP_JSON=$($VM bump rc --base "$BUMP" --json)
+          elif [[ -n "$PROMOTE_FROM" ]]; then
+            VERSION=$($VM compose --ref "$PROMOTE_FROM" --field version)
+            BUMP_JSON=$(jq -n --arg v "$VERSION" '{tag: ("v" + $v), stores_changed: false}')
+          else
+            BUMP_JSON=$($VM bump "$BUMP" --json)
+          fi
+          echo "prepare: ${BUMP_JSON}"
+
+          echo "tag=$(echo "${BUMP_JSON}" | jq -r .tag)" >> "$GITHUB_OUTPUT"
+          echo "changed=$(echo "${BUMP_JSON}" | jq -r .stores_changed)" >> "$GITHUB_OUTPUT"
+          echo "previous_tag=$($VM compose --latest-stable --field tag 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
+          echo "to_tag=${PROMOTE_FROM:-HEAD}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        if: steps.prepare.outputs.previous_tag != ''
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v6
+        with:
+          configuration: .github/changelog-config.json
+          fromTag: ${{ steps.prepare.outputs.previous_tag }}
+          toTag: ${{ steps.prepare.outputs.to_tag }}
+
+      - name: Commit, tag and push
+        if: ${{ !inputs.dry_run }}
+        env:
+          TAG: ${{ steps.prepare.outputs.tag }}
+          CHANGED: ${{ steps.prepare.outputs.changed }}
+          PROMOTE_FROM: ${{ inputs.promote_from }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/${TAG}" > /dev/null; then
+            echo "Tag ${TAG} already exists" >&2
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [[ "$CHANGED" == "true" ]]; then
+            git add -A
+            git commit -m "release: ${TAG}"
+          fi
+
+          if [[ -n "$PROMOTE_FROM" ]]; then
+            # stable tag goes on the exact validated rc commit
+            git tag -a "${TAG}" "${PROMOTE_FROM}^{commit}" -m "Release ${TAG}"
+          else
+            git tag -a "${TAG}" -m "Release ${TAG}"
+          fi
+
+          git push origin HEAD:master
+          git push origin "refs/tags/${TAG}"
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry_run }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.prepare.outputs.tag }}
+          name: Release ${{ steps.prepare.outputs.tag }}
+          body: ${{ steps.changelog.outputs.changelog || 'Initial release' }}
+          draft: false
+          prerelease: ${{ inputs.channel == 'pre-release' }}
