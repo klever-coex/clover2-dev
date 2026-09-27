@@ -14,7 +14,7 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.defaultProfile.linux": "bash"
       },
       "extensions": [
         "betwo.b2-catkin-tools",

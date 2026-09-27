@@ -1,0 +1,88 @@
+name: Docker Bake
+description: Build [and push] Docker images using docker/bake-action
+
+inputs:
+  target:
+    description: Bake target name
+    required: true
+  build-mode:
+    description: Build mode (develop, master, release, pre-release)
+    type: string
+    required: true
+    default: develop
+  git-hash:
+    description: Short git hash for image tagging
+    type: string
+    required: true
+  version:
+    description: Version string for release builds
+    type: string
+    required: false
+    default: ''
+  push:
+    description: Whether to push images to registry
+    required: false
+    default: 'true'
+  cache-scope:
+    description: Cache scope suffix (defaults to the target name)
+    type: string
+    required: false
+    default: ''
+  needs-source:
+    description: Clone repos to build
+    type: boolean
+    default: true
+
+runs:
+  using: composite
+  steps:
+    - id: setup
+      uses: ./.github/actions/docker-setup
+      with:
+        login: ${{ inputs.push }}
+
+    - name: Import VCS source repos
+      if: inputs.needs-source
+      shell: bash
+      run: |
+        pipx install vcs2l
+        mkdir -p src
+        vcs import --shallow src < repos/simulation.yaml
+
+    - name: Build (no push) ${{ inputs.target }}
+      if: ${{ inputs.push != 'true' }}
+      uses: docker/bake-action@v7
+      with:
+        source: .
+        files: docker/docker-bake.hcl
+        targets: ${{ inputs.target }}
+        push: false
+        provenance: false
+        builder: ${{ steps.setup.outputs.builder-name }}
+        set: |
+          *.cache-from=type=gha,scope=clover2-dev-${{ inputs.cache-scope || inputs.target }}
+        vars: |
+          REGISTRY=ghcr.io/${{ github.repository_owner }}/clover2-dev/
+          BUILD_MODE=${{ inputs.build-mode }}
+          CLOVER2_DEV_GIT_HASH=${{ inputs.git-hash }}
+          CLOVER2_DEV_VERSION=${{ inputs.version }}
+          USE_REGISTRY_CONTEXTS=false
+
+    - name: Build and push ${{ inputs.target }}
+      if: ${{ inputs.push == 'true' }}
+      uses: docker/bake-action@v7
+      with:
+        source: .
+        files: docker/docker-bake.hcl
+        targets: ${{ inputs.target }}
+        push: true
+        builder: ${{ steps.setup.outputs.builder-name }}
+        set: |
+          *.cache-from=type=gha,scope=clover2-dev-${{ inputs.cache-scope || inputs.target }}
+          *.cache-to=type=gha,scope=clover2-dev-${{ inputs.cache-scope || inputs.target }},mode=max
+        vars: |
+          REGISTRY=ghcr.io/${{ github.repository_owner }}/clover2-dev/
+          BUILD_MODE=${{ inputs.build-mode }}
+          CLOVER2_DEV_GIT_HASH=${{ inputs.git-hash }}
+          CLOVER2_DEV_VERSION=${{ inputs.version }}
+          USE_REGISTRY_CONTEXTS=false
