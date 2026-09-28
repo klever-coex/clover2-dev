@@ -40,6 +40,15 @@
     - gz
     - simulation
 
+- name: Remove old Gazebo apt repository
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/gazebo-stable.list
+    state: absent
+  tags:
+    - gz
+    - simulation
+
 - name: Add Gazebo apt repository
   become: true
   ansible.builtin.apt_repository:

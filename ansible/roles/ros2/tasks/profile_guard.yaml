@@ -1,0 +1,41 @@
+---
+- name: Check managed ROS snapshot source
+  become: true
+  ansible.builtin.stat:
+    path: "{{ ros2_snapshot_source_path }}"
+  register: ros2__snapshot_source
+
+- name: Read managed ROS snapshot source
+  become: true
+  ansible.builtin.slurp:
+    src: "{{ ros2_snapshot_source_path }}"
+  register: ros2__snapshot_source_contents
+  when: ros2__snapshot_source.stat.exists
+
+- name: List installed ROS distribution packages
+  ansible.builtin.command:
+    argv:
+      - dpkg-query
+      - -W
+      - -f=${binary:Package}\n
+      - "ros-{{ ros_distro }}-*"
+  register: ros2__installed_packages
+  changed_when: false
+  failed_when: ros2__installed_packages.rc not in [0, 1]
+
+- name: Refuse to switch an installed ROS package set
+  ansible.builtin.assert:
+    that:
+      - >-
+        not ros2__snapshot_source.stat.exists or
+        (ros2_snapshot_date | length > 0 and
+        ('URIs: http://snapshots.ros.org/' ~ ros_distro ~ '/' ~ ros2_snapshot_date ~ '/ubuntu') in
+        (ros2__snapshot_source_contents.content | b64decode))
+      - >-
+        ros2__installed_packages.stdout | length == 0 or
+        (ros2__snapshot_source.stat.exists and ros2_snapshot_date | length > 0 and
+        ('URIs: http://snapshots.ros.org/' ~ ros_distro ~ '/' ~ ros2_snapshot_date ~ '/ubuntu') in
+        (ros2__snapshot_source_contents.content | b64decode))
+    fail_msg: >-
+      Switching ROS package sources on an installed system is not supported.
+      Use a clean system for ros_packages_profile={{ ros_packages_profile | default('custom') }}.
