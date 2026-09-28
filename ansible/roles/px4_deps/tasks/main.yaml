@@ -28,8 +28,6 @@
   become: true
   ansible.builtin.command:
     cmd: "bash {{ px4_tmpdir.path }}/ubuntu.sh"
-  environment:
-    PIP_IGNORE_INSTALLED: "1"
   changed_when: true
   tags:
     - px4
