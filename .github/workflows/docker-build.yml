@@ -22,12 +22,14 @@ jobs:
     outputs:
       build_mode: ${{ steps.version.outputs.build_mode }}
       git_hash: ${{ steps.version.outputs.git_hash }}
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.version.outputs.project_version }}
     steps:
       - uses: actions/checkout@v7
 
-      - uses: ./.github/actions/version-detect
+      - uses: klever-coex/clover2-cli@v0.0.4
         id: version
+        with:
+          detect-version: 'true'
 
   docker:
     needs: detect-mode
@@ -44,7 +46,7 @@ jobs:
           - target: core-devel
             needs-source: true
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/docker-bake
         with:
