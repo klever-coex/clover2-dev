@@ -1,0 +1,19 @@
+Source: ros2-jazzy-custom
+Section: metapackages
+Priority: optional
+Maintainer: Clover2 <clover2@example.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://github.com/coex/clover2
+
+Package: ros2-jazzy-custom
+Architecture: arm64
+Depends: ros-jazzy-ros-base,
+         python3-colcon-common-extensions,
+         python3-rosdep,
+         bash
+Description: ROS 2 Jazzy metapackage for Clover2 onboard computer
+ Installs the full ROS 2 Jazzy base stack with build tools.
+ This is a convenience metapackage for the Clover2 image build.
+ .
+ Includes: ros-jazzy-ros-base, colcon, rosdep, and Clover2 dependencies.

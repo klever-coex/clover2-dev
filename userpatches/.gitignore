@@ -1,0 +1,21 @@
+# Armbian build output
+output/
+cache/
+
+# Generated images
+*.img
+*.img.xz
+*.img.gz
+
+# Temp files
+*.tmp
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

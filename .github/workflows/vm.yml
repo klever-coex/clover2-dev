@@ -1,0 +1,26 @@
+name: Docker VM
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # ubuntu-24.04-arm, ubuntu-24.04-riscv
+    steps:
+      - uses: armbian/build@main
+        with:
+          armbian_token: ${{ secrets.GITHUB_TOKEN }}
+          armbian_target: "clover2-vb"
+          armbian_runner_clean: "yes" # recommended for Github runners

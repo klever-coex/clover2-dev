@@ -1,0 +1,7 @@
+Origin: clover2
+Label: clover2
+Codename: noble
+Architectures: arm64
+Components: main
+Description: Clover2 custom APT repository (ROS 2 Jazzy + Clover2 dependencies)
+SignWith: yes
