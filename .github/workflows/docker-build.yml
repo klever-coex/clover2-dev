@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: klever-coex/clover2-cli@master
+      - uses: klever-coex/clover2-cli@v0.0.5
         id: version
         with:
           detect-version: 'true'
