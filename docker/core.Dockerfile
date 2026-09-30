@@ -3,11 +3,10 @@ ARG BASE_IMAGE=clover2-base
 FROM ${BASE_IMAGE} AS core-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
+ARG ROS_PACKAGES_PROFILE=jazzy-2026-06-18
 
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
-
-RUN rosdep update --rosdistro=${ROS_DISTRO} -r
 
 RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansible/ansible-galaxy-requirements.yaml \
     --mount=type=bind,source=ansible,target=/tmp/ansible/ansible \
@@ -18,12 +17,14 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     cd /tmp/ansible && \
     ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml && \
     ansible-playbook clover2.dev.install_deps --tags core -i /tmp/ansible/ansible/inventory.ini \
-    -e rosdistro=${ROS_DISTRO} && \
+    -e rosdistro=${ROS_DISTRO} -e ros_packages_profile=${ROS_PACKAGES_PROFILE} && \
     pipx uninstall ansible
 
-COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/clover2-dev
-
 USER root
+
+RUN rosdep update --rosdistro=${ROS_DISTRO} -r
+
+COPY --parents --chown=${USERNAME}:${USERNAME} src/**/package.xml /tmp/clover2-dev
 
 RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=apt-lists-${ROS_DISTRO},target=/var/lib/apt/lists,sharing=locked \
@@ -35,6 +36,7 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
 
 FROM core-depend AS core-devel
 ARG ROS_DISTRO
+ARG ROS_PACKAGES_PROFILE
 
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
@@ -51,7 +53,7 @@ RUN --mount=type=bind,source=ansible-galaxy-requirements.yaml,target=/tmp/ansibl
     --tags simulation \
     --skip-tags core \
     -i /tmp/ansible/ansible/inventory.ini \
-    -e rosdistro=${ROS_DISTRO} && \
+    -e rosdistro=${ROS_DISTRO} -e ros_packages_profile=${ROS_PACKAGES_PROFILE} && \
     pipx uninstall ansible
 
 USER root
