@@ -9,7 +9,6 @@
       - "ros-{{ ros_distro }}-image-geometry"
       - "ros-{{ ros_distro }}-image-view"
       - "ros-{{ ros_distro }}-tf-transformations"
-      - "ros-{{ ros_distro }}-web-video-server"
       - "nlohmann-json3-dev"
     state: present
   tags:
