@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: matveylapin
+  description: Configure DDS (CycloneDDS / Fast DDS) profiles and environment for ROS 2
+  license: Apache-2.0
+  min_ansible_version: "2.16"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+
+dependencies: []

@@ -1,7 +1,7 @@
 # check=skip=InvalidDefaultArgInFrom
 ARG ROS_DISTRO
 
-FROM ros:${ROS_DISTRO}-ros-base AS base
+FROM ubuntu:noble AS base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ROS_DISTRO
@@ -13,7 +13,9 @@ RUN --mount=type=cache,id=apt-cache-${ROS_DISTRO},target=/var/cache/apt,sharing=
     apt-get install -y --no-install-recommends \
     sudo \
     bash-completion \
+    ca-certificates \
     iproute2 \
+    lsb-release \
     pipx \
     gosu
 

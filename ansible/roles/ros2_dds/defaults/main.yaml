@@ -1,0 +1,31 @@
+---
+ros_distro: "{{ lookup('env', 'ROS_DISTRO') | default('jazzy', true) }}"
+
+# RMW implementation to configure: cyclonedds | fastdds
+ros2_dds_rmw: cyclonedds
+
+# Config profile the env file points at:
+#   cyclonedds: network | loopback
+#   fastdds:    network | shm
+ros2_dds_profile: network
+
+ros2_dds_config_dir: /etc/ros2/dds
+ros2_dds_env_file: "{{ ros2_dds_config_dir }}/env"
+
+ros2_dds_install_rmw: true
+
+ros2_dds_ros_domain_id: # null
+
+ros2_dds_implementations:
+  cyclonedds:
+    apt_package: rmw-cyclonedds-cpp
+    rmw_implementation: rmw_cyclonedds_cpp
+    profiles:
+      - network
+      - loopback
+  fastdds:
+    apt_package: rmw-fastrtps-cpp
+    rmw_implementation: rmw_fastrtps_cpp
+    profiles:
+      - network
+      - shm

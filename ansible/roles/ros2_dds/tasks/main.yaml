@@ -1,0 +1,61 @@
+---
+- name: Validate RMW implementation
+  ansible.builtin.assert:
+    that: ros2_dds_rmw in ros2_dds_implementations
+    fail_msg: >-
+      ros2_dds_rmw must be one of {{ ros2_dds_implementations.keys() | list }},
+      got '{{ ros2_dds_rmw }}'
+  tags:
+    - ros2-dds
+
+- name: Validate DDS profile
+  ansible.builtin.assert:
+    that: ros2_dds_profile in ros2_dds_implementations[ros2_dds_rmw].profiles
+    fail_msg: >-
+      ros2_dds_profile must be one of
+      {{ ros2_dds_implementations[ros2_dds_rmw].profiles }},
+      got '{{ ros2_dds_profile }}'
+  tags:
+    - ros2-dds
+
+- name: Install RMW implementation package (ros-{{ ros_distro }}-{{ ros2_dds_implementations[ros2_dds_rmw].apt_package }})
+  become: true
+  ansible.builtin.apt:
+    name: ros-{{ ros_distro }}-{{ ros2_dds_implementations[ros2_dds_rmw].apt_package }}
+    state: present
+  when: ros2_dds_install_rmw | bool
+  tags:
+    - ros2-dds
+
+- name: Create DDS config directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ ros2_dds_config_dir }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ ros2_dds_implementations.keys() }}"
+  tags:
+    - ros2-dds
+
+- name: Deploy DDS profile configs
+  become: true
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ ros2_dds_config_dir }}/{{ item }}"
+    mode: "0644"
+  loop:
+    - cyclonedds/network.xml
+    - cyclonedds/loopback.xml
+    - fastdds/network.xml
+    - fastdds/shm.xml
+  tags:
+    - ros2-dds
+
+- name: Render DDS env file
+  become: true
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ ros2_dds_env_file }}"
+    mode: "0644"
+  tags:
+    - ros2-dds

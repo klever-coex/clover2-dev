@@ -1,0 +1,4 @@
+# Keep the PX4 Python dependencies compatible with Ubuntu 24.04's
+# Debian-provided NumPy 1.26.x.
+numpy<2
+contourpy<1.4
