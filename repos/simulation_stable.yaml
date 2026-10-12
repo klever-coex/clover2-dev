@@ -3,8 +3,8 @@ repositories:
   clover2:
     type: git
     url: https://github.com/klever-coex/clover2.git
-    version: master
+    version: v0.2.0-rc.9
   clover2-sim:
     type: git
     url: https://github.com/klever-coex/clover2-sim.git
-    version: adapt-for-vm
+    version: 843361b36e2bdf6a7ebf748a3c22551a06a2f1b7
