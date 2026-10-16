@@ -47,7 +47,7 @@ runs:
       run: |
         pipx install vcs2l
         mkdir -p src
-        vcs import --shallow src < repos/simulation.yaml
+        vcs import --shallow src < repos/simulation_stable.yaml
 
     - name: Build (no push) ${{ inputs.target }}
       if: ${{ inputs.push != 'true' }}
