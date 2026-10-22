@@ -12,8 +12,13 @@
 
 Inside `Dev Container`
 ```bash
-vcs import src --recursive < repos/simulation.yaml
+vcs import src --recursive < repos/simulation_stable.yaml
 ```
+for stable version or
+```bash
+vcs import src --recursive < repos/simulation_latest.yaml
+```
+for latest version (could be unstable).
 
 ## Build
 
