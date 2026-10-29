@@ -8,3 +8,7 @@ repositories:
     type: git
     url: https://github.com/klever-coex/clover2-sim.git
     version: 1bd410197834548f0f743dcbcb5dc6aa73fc3d5c
+  web_video_server:
+    type: git
+    url: https://github.com/RobotWebTools/web_video_server.git
+    version: ros2
